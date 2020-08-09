@@ -174,11 +174,12 @@ mrb_rf_file_callbacks(mrb_state *mrb, rf_io_callbacks *cb)
 void
 mrb_file_set_write(mrb_state *mrb, const char *org, const char *name)
 {
-  if (!PHYSFS_setWriteDir(PHYSFS_getPrefDir(org, name)))
+  const char *prefs = PHYSFS_getPrefDir(org, name);
+  if (!PHYSFS_setWriteDir(prefs))
   {
-    PHYSFS_mount(PHYSFS_getPrefDir(org, name), NULL, 0);
     mrb_raisef(mrb, E_FILE_ERROR, "Failed to setup write directory (%s)", PHYSFS_ERROR_STR);
   }
+  PHYSFS_mount(prefs, "@saves", 0);
 }
 
 enum mrb_file_mode
@@ -254,8 +255,7 @@ mrb_setup_filesystem(mrb_state *mrb)
     }
     PHYSFS_permitSymbolicLinks(1);
     PHYSFS_mount(PHYSFS_getBaseDir(), NULL, 1);
-    PHYSFS_setWriteDir(PHYSFS_getPrefDir("OGSS Games", "Default"));
-    PHYSFS_mount(PHYSFS_getPrefDir("OGSS Games", "Default"), NULL, 0);
+    mrb_file_set_write(mrb, "OGSS Games", "Default");
   }
 }
 
