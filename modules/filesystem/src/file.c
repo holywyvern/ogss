@@ -311,8 +311,8 @@ file_print(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "*", &args, &count);
   for (mrb_int i = 0; i < count; ++i)
   {
-    char *str = mrb_str_to_cstr(mrb, mrb_funcall(mrb, args[i], "to_s", 0));
-    mrb_file_write(fp, strlen(str), str);
+    mrb_value str = mrb_funcall(mrb, args[i], "to_s", 0);
+    mrb_file_write(fp, RSTRING_LEN(str), RSTRING_PTR(str));
   }
   return mrb_nil_value();
 }
