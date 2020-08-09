@@ -1,0 +1,17 @@
+---
+mruby_version:
+  version: 2.1.1
+  release_no: 20101
+  git_commit: f9d113f7647121f8578742a2a9ac256ece365e3f
+builds:
+  host:
+    https://github.com/iij/mruby-regexp-pcre.git:
+      url: https://github.com/iij/mruby-regexp-pcre.git
+      branch: HEAD
+      commit: a961225c0953dd2bd987111f0836821573616de2
+      version: 0.0.0
+    https://github.com/holywyvern/mruby-marshal.git:
+      url: https://github.com/holywyvern/mruby-marshal.git
+      branch: HEAD
+      commit: a9eab1e6ab9bb4a32d1ae966d9434116cd8d1049
+      version: 0.0.0

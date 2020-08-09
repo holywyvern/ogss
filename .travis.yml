@@ -1,0 +1,20 @@
+language: c
+os:
+  - windows
+  # - linux
+matrix:
+  include:
+    - os: windows
+      install:
+        - choco install winflexbison
+  # include:
+  #   - os: linux
+  #     before_install:
+  #       - sudo apt-get -qq update
+  #     install:
+  #       - sudo apt-get -qq install rake bison git gperf
+script:
+  - rake
+  - rake test        
+env:
+  - ENABLE_TEST=true
