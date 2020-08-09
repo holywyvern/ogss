@@ -2,6 +2,10 @@ class File
   include Enumerable
 
   class << self
+    def join(*args)
+      args.join('/')
+    end
+
     def open(name, mode = 'r', &block)
       new(name, mode, &block)
     end
