@@ -60,7 +60,7 @@ new_value_source(mrb_state *mrb, mrb_value str, struct marshal_ctx *marshal)
 static void
 marshal_putc(mrb_state *mrb, struct marshal_ctx *src, int8_t c)
 {
-  if (src->type = MARSHAL_FILE)
+  if (src->type == MARSHAL_FILE)
   {
     mrb_file_write(src->as_file, 1, &c);
     return;
@@ -71,7 +71,7 @@ marshal_putc(mrb_state *mrb, struct marshal_ctx *src, int8_t c)
 static void
 marshal_puts(mrb_state *mrb, struct marshal_ctx *src, char *buff, size_t buff_size)
 {
-  if (src->type = MARSHAL_FILE)
+  if (src->type == MARSHAL_FILE)
   {
     mrb_file_write(src->as_file, buff_size, buff);
     return;
@@ -329,7 +329,7 @@ marshal_getc(struct marshal_ctx *marshal)
   {
     return 0;
   }
-  if (marshal->type = MARSHAL_FILE)
+  if (marshal->type == MARSHAL_FILE)
   {
     int8_t byte;
     mrb_file_read(marshal->as_file, 1, (char *)&byte);
@@ -347,7 +347,7 @@ marshal_gets(mrb_state *mrb, struct marshal_ctx *marshal, char *buffer, size_t s
   {
     return 0;
   }
-  if (marshal->type = MARSHAL_FILE)
+  if (marshal->type == MARSHAL_FILE)
   {
     return mrb_file_read(marshal->as_file, size, buffer);
   }
