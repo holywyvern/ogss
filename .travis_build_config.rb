@@ -10,9 +10,9 @@ MRuby::Build.new do |conf| # rubocop:disable Metrics/BlockLength
     mruby-eval mruby-compiler
   ].freeze
   TEST_REPOS = %w[ksss/mruby-stringio].freeze
-  REPOS = %w[iij/mruby-regexp-pcre].freeze
+  REPOS = %w[iij/mruby-regexp-pcre holywyvern/mruby-marshal].freeze
   MODULES = %w[
-    dependencies core math filesystem marshal graphics audio input game
+    dependencies core math filesystem graphics audio input game
   ].freeze
 
   if ENV['VisualStudioVersion'] || ENV['VSINSTALLDIR']

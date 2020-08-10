@@ -10,7 +10,7 @@ module Kernel
   end
 
   def load_data(filename)
-    load_data("@saves/#{filename}")
+    load_file("@saves/#{filename}")
   end
 
   def save_data(obj, filename)
