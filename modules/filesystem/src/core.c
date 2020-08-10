@@ -188,6 +188,18 @@ mrb_file_get_mode(mrb_file *file)
   return file->mode;
 }
 
+mrb_bool
+mrb_file_mkdir(mrb_state *mrb, const char *name)
+{
+  return (mrb_bool)PHYSFS_mkdir(name);
+}
+
+mrb_bool
+mrb_file_remove(mrb_state *mrb, const char *name)
+{
+  return (mrb_bool)PHYSFS_delete(name);
+}
+
 void
 mrb_file_flush(mrb_file *file)
 {
@@ -241,7 +253,7 @@ mrb_setup_filesystem(mrb_state *mrb)
     PHYSFS_setAllocator(&physfs_allocator);
     if (mrb_string_p(argv0))
     {
-      const char str = mrb_str_to_cstr(mrb, argv0);
+      const char *str = mrb_str_to_cstr(mrb, argv0);
       physfs_init = PHYSFS_init(str);
       PHYSFS_mount(str, NULL, 1);
     }

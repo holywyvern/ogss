@@ -74,6 +74,12 @@ mrb_file_set_write(mrb_state *mrb, const char *org, const char *name);
 void
 mrb_rf_file_callbacks(mrb_state *mrb, rf_io_callbacks *cb);
 
+mrb_bool
+mrb_file_mkdir(mrb_state *mrb, const char *name);
+
+mrb_bool
+mrb_file_remove(mrb_state *mrb, const char *name);
+
 static inline mrb_file *
 mrb_get_file(mrb_state *mrb, mrb_value obj)
 {
