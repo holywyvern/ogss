@@ -58,18 +58,18 @@ new_value_source(mrb_state *mrb, mrb_value str, struct marshal_ctx *marshal)
 }
 
 static void
-marshal_ctx_putc(mrb_state *mrb, struct marshal_ctx *src, char c)
+marshal_putc(mrb_state *mrb, struct marshal_ctx *src, int8_t c)
 {
   if (src->type = MARSHAL_FILE)
   {
     mrb_file_write(src->as_file, 1, &c);
     return;
   }
-  src->as_value = mrb_str_cat(mrb, src->as_value, &c, 1);
+  src->as_value = mrb_str_cat(mrb, src->as_value, (char *)&c, 1);
 }
 
 static void
-marshal_ctx_puts(mrb_state *mrb, struct marshal_ctx *src, char *buff, size_t buff_size)
+marshal_puts(mrb_state *mrb, struct marshal_ctx *src, char *buff, size_t buff_size)
 {
   if (src->type = MARSHAL_FILE)
   {
@@ -133,7 +133,7 @@ dump_fixnum(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj);
 static void
 dump_float(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj);
 
-#define TAG(c) marshal_ctx_putc(mrb, src, c)
+#define TAG(c) marshal_putc(mrb, src, c)
 
 static void
 dump_marshal(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj)
@@ -214,14 +214,14 @@ dump_symbol(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj)
 {
   TAG(':');
   mrb_value str = mrb_to_str(mrb, mrb_funcall(mrb, obj, "to_s", 0));
-  marshal_ctx_puts(mrb, src, RSTRING_PTR(str), RSTRING_LEN(str));
+  marshal_puts(mrb, src, RSTRING_PTR(str), RSTRING_LEN(str));
 }
 
 static void
 dump_string(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj)
 {
   TAG('"');
-  marshal_ctx_puts(mrb, src, RSTRING_PTR(obj), RSTRING_LEN(obj));
+  marshal_puts(mrb, src, RSTRING_PTR(obj), RSTRING_LEN(obj));
 }
 
 static void
@@ -255,20 +255,20 @@ dump_fixnum(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj)
   mrb_int v = mrb_int(mrb, obj);
   if(v == 0)
   {
-    signed char c = 0;
-    marshal_ctx_putc(mrb, src, c);
+    int8_t c = 0;
+    marshal_putc(mrb, src, c);
     return;
   }
   if (0 < v && v < 123)
   {
-    char c = (char)(v + 5);
-    marshal_ctx_putc(mrb, src, c);
+    int8_t c = (int8_t)(v + 5);
+    marshal_putc(mrb, src, c);
     return;
   }
   if(-124 < v && v < 0)
   {
-    char c = (char)((v - 5) & 0xff);
-    marshal_ctx_putc(mrb, src, c);
+    int8_t c = (int8_t)((v - 5) & 0xff);
+    marshal_putc(mrb, src, c);
     return;
   }
   char buf[sizeof(mrb_int)];
@@ -280,14 +280,14 @@ dump_fixnum(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj)
     if(x ==  0) { buf[0] = (char) i; break; }
     if(x == -1) { buf[0] = (char)-i; break; }
   }
-  marshal_ctx_puts(mrb, src, buf, sizeof(mrb_int));
+  marshal_puts(mrb, src, buf, sizeof(mrb_int));
 }
 
 static void
 dump_float(mrb_state *mrb, struct marshal_ctx *src, mrb_value obj)
 {
   mrb_value str = mrb_to_str(mrb, mrb_funcall(mrb, obj, "to_s", 0));
-  marshal_ctx_puts(mrb, src, RSTRING_PTR(str), RSTRING_LEN(str));
+  marshal_puts(mrb, src, RSTRING_PTR(str), RSTRING_LEN(str));
 }
 
 static mrb_value
@@ -299,15 +299,15 @@ marshal_dump(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "o|o", &source, &target);
   if (mrb_is_file(target))
   {
-    new_file_source(mrb_get_file(mrb, source), &src);
+    new_file_source(mrb_get_file(mrb, target), &src);
   }
   else
   {
     target = mrb_funcall(mrb, target, "to_s", 0);
     new_value_source(mrb, target, &src);
   }
-  marshal_ctx_putc(mrb, &src, MAJOR_VERSION);
-  marshal_ctx_putc(mrb, &src, MINOR_VERSION);
+  marshal_putc(mrb, &src, MAJOR_VERSION);
+  marshal_putc(mrb, &src, MINOR_VERSION);
   dump_marshal(mrb, &src, source);
   return target;
 }
@@ -322,7 +322,7 @@ marshal_eof(struct marshal_ctx *marshal)
   return marshal->as_string.pos >= marshal->as_string.len;
 }
 
-static uint8_t
+static int8_t
 marshal_getc(struct marshal_ctx *marshal)
 {
   if (marshal_eof(marshal))
@@ -331,7 +331,7 @@ marshal_getc(struct marshal_ctx *marshal)
   }
   if (marshal->type = MARSHAL_FILE)
   {
-    uint8_t byte;
+    int8_t byte;
     mrb_file_read(marshal->as_file, 1, (char *)&byte);
     return byte;
   }
@@ -478,7 +478,9 @@ load_fixnum(mrb_state *mrb, struct marshal_ctx *src)
     }
     mrb_int ret = 0;
     for(mrb_int i = 0; i < c; ++i) {
-      ret |= ((mrb_int)marshal_getc(src)) << (8 * i);
+      int8_t x = marshal_getc(src);
+      uint8_t *x2 = (uint8_t *)&x;
+      ret |= ((mrb_int)*x2) << (8 * i);
     }
     return mrb_fixnum_value(ret);
   }
