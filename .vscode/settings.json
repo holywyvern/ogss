@@ -3,6 +3,11 @@
     "xlocale": "c",
     "vector": "c",
     "xstring": "c",
-    "xutility": "c"
+    "xutility": "c",
+    "stack": "c",
+    "system_error": "c",
+    "type_traits": "c",
+    "xtr1common": "c",
+    "sstream": "c"
   }
 }

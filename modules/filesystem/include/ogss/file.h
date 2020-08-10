@@ -86,6 +86,12 @@ mrb_get_file(mrb_state *mrb, mrb_value obj)
   return file;
 }
 
+static inline mrb_bool
+mrb_is_file(mrb_value obj)
+{
+  return mrb_data_p(obj) && DATA_TYPE(obj) == &mrb_file_data_type;
+}
+
 #ifdef __cplusplus
 }
 #endif

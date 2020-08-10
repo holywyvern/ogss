@@ -3,7 +3,7 @@ MRuby::Gem::Specification.new('ogss-game-engine') do |spec|
   spec.author  = 'Ramiro Rojo'
 
   DEPENDENCIES = %w[
-    dependencies core math filesystem graphics audio input game
+    dependencies core math filesystem marshal graphics audio input game
   ].freeze
 
   DEPENDENCIES.each do |dep|
