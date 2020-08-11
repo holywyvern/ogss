@@ -71,8 +71,8 @@ mrb_file_seek(mrb_file *file, size_t position);
 void
 mrb_file_set_write(mrb_state *mrb, const char *org, const char *name);
 
-void
-mrb_rf_file_callbacks(mrb_state *mrb, rf_io_callbacks *cb);
+rf_io_callbacks
+mrb_get_io_callbacks(mrb_state *mrb);
 
 mrb_bool
 mrb_file_mkdir(mrb_state *mrb, const char *name);

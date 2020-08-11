@@ -1,5 +1,5 @@
 #ifndef OGSS_COLOR_H
-#define OGSS_COLOR_H
+#define OGSS_COLOR_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>

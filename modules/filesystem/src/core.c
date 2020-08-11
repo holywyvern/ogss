@@ -163,12 +163,14 @@ rf_mrb_file_read(void* user_data, const char* filename, void* dst, int dst_size)
   return read > 0;
 }
 
-void
-mrb_rf_file_callbacks(mrb_state *mrb, rf_io_callbacks *cb)
+rf_io_callbacks
+mrb_get_io_callbacks(mrb_state *mrb)
 {
-  cb->file_size_proc = rf_mrb_file_size;
-  cb->read_file_proc = rf_mrb_file_read;
-  cb->user_data = mrb;
+  rf_io_callbacks io;
+  io.file_size_proc = rf_mrb_file_size;
+  io.read_file_proc = rf_mrb_file_read;
+  io.user_data = mrb;
+  return io;
 }
 
 void

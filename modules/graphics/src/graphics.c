@@ -16,11 +16,18 @@ static const mrb_data_type config_type = {
   "Graphics::Config", mrb_free
 };
 
+static inline mrb_value
+get_config_obj(mrb_state *mrb, mrb_value self)
+{
+  rf_graphics_config *config;
+  return mrb_iv_get(mrb, self, CONFIG);
+}
+
 static inline rf_graphics_config *
 get_config(mrb_state *mrb, mrb_value self)
 {
+  mrb_value config_value = get_config_obj(mrb, self);
   rf_graphics_config *config;
-  mrb_value config_value = mrb_iv_get(mrb, self, CONFIG);
   Data_Get_Struct(mrb, config_value, &config_type, config);
   config->title = mrb_iv_get(mrb, config_value, TITLE);
   return config;
@@ -41,6 +48,29 @@ mrb_graphics_get_height(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+mrb_graphics_get_title(mrb_state *mrb, mrb_value self)
+{
+  rf_graphics_config *config = get_config(mrb, self);
+  return config->title;
+}
+
+static mrb_value
+mrb_graphics_set_title(mrb_state *mrb, mrb_value self)
+{
+  mrb_value value;
+  mrb_get_args(mrb, "S", &value);
+  mrb_iv_set(mrb, self, TITLE, value);
+  rf_graphics_config *config = get_config(mrb, self);
+  if (config->is_open)
+  {
+#ifdef OGSS_PLATFORM_GLFW
+    glfwSetWindowTitle(config->window, mrb_str_to_cstr(mrb, value));
+#endif
+  }
+  return value;
+}
+
+static mrb_value
 mrb_graphics_resize_screen(mrb_state *mrb, mrb_value self)
 {
   mrb_int width, height;
@@ -48,42 +78,61 @@ mrb_graphics_resize_screen(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "ii", &width, &height);
   if (width < 1) mrb_raise(mrb, E_ARGUMENT_ERROR, "Width must be positive");
   if (height < 1) mrb_raise(mrb, E_ARGUMENT_ERROR, "Height must be positive");
+  config->width = width;
+  config->height = height;
+  if (config->is_open)
+  {
+#ifdef OGSS_PLATFORM_GLFW
+    glfwSetWindowSize(config->window, width, height);
+#endif
+  }
   return mrb_nil_value();
 }
 
 static mrb_value
-mrb_graphics_update(mrb_state *mrb, mrb_value self)
+mrb_graphics_wait(mrb_state *mrb, mrb_value self)
+{
+  return mrb_nil_value();
+}
+
+static mrb_value
+mrb_graphics_fadein(mrb_state *mrb, mrb_value self)
+{
+  return mrb_nil_value();
+}
+
+static mrb_value
+mrb_graphics_fadeout(mrb_state *mrb, mrb_value self)
+{
+  return mrb_nil_value();
+}
+
+static mrb_value
+mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
+{
+  return mrb_nil_value();
+}
+
+static mrb_value
+mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
 {
   rf_graphics_config *config = get_config(mrb, self);
 #ifdef OGSS_PLATFORM_GLFW
   glfwPollEvents();
   glfwSwapBuffers(config->window);
 #endif
+  return mrb_nil_value();
 }
 
 static mrb_value
-mrb_graphics_wait(mrb_state *mrb, mrb_value self)
+mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
-}
-
-static mrb_value
-mrb_graphics_fadein(mrb_state *mrb, mrb_value self)
-{
-}
-
-static mrb_value
-mrb_graphics_fadeout(mrb_state *mrb, mrb_value self)
-{
-}
-
-static mrb_value
-mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
-{
-}
-
-static mrb_value
-mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
-{
+  rf_begin();
+  rf_clear(RF_RAYWHITE);
+  // TODO: Draw graphics
+  rf_end();
+  mrb_graphics_frame_reset(mrb, self);
+  return mrb_nil_value();
 }
 
 static mrb_value
@@ -214,7 +263,14 @@ mrb_init_graphics(mrb_state *mrb)
 
   mrb_define_module_function(mrb, graphics, "width", mrb_graphics_get_width, MRB_ARGS_NONE());
   mrb_define_module_function(mrb, graphics, "height", mrb_graphics_get_height, MRB_ARGS_NONE());
+  mrb_define_module_function(mrb, graphics, "title", mrb_graphics_get_title, MRB_ARGS_NONE());
+  mrb_define_module_function(mrb, graphics, "screen_title", mrb_graphics_get_title, MRB_ARGS_NONE());
+
+  mrb_define_module_function(mrb, graphics, "title=", mrb_graphics_set_title, MRB_ARGS_REQ(1));
+  mrb_define_module_function(mrb, graphics, "screen_title=", mrb_graphics_set_title, MRB_ARGS_REQ(1));
+
   mrb_define_module_function(mrb, graphics, "resize_screen", mrb_graphics_resize_screen, MRB_ARGS_REQ(2));
+  mrb_define_module_function(mrb, graphics, "resize", mrb_graphics_resize_screen, MRB_ARGS_REQ(2));
 
   mrb_define_module_function(mrb, mrb->kernel_module, "start_game", mrb_start_game, MRB_ARGS_BLOCK());
 }

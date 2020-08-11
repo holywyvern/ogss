@@ -8,6 +8,10 @@
     "system_error": "c",
     "type_traits": "c",
     "xtr1common": "c",
-    "sstream": "c"
+    "sstream": "c",
+    "class.h": "c",
+    "deque": "c",
+    "initializer_list": "c",
+    "xtree": "c"
   }
 }
