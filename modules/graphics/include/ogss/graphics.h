@@ -31,6 +31,9 @@ struct rf_graphics_config
   rf_window_ref              window;
   mrb_value                  title;
   rf_gfx_backend_init_data  *data;
+  mrb_bool                   is_frozen;
+  rf_texture2d               frozen_img;
+  rf_render_texture2d        render_texture;
 };
 
 #ifdef __cplusplus

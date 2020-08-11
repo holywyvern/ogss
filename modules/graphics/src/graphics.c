@@ -75,6 +75,7 @@ mrb_graphics_resize_screen(mrb_state *mrb, mrb_value self)
 {
   mrb_int width, height;
   rf_graphics_config *config = get_config(mrb, self);
+  if (config->is_frozen) return mrb_nil_value();
   mrb_get_args(mrb, "ii", &width, &height);
   if (width < 1) mrb_raise(mrb, E_ARGUMENT_ERROR, "Width must be positive");
   if (height < 1) mrb_raise(mrb, E_ARGUMENT_ERROR, "Height must be positive");
@@ -110,6 +111,13 @@ mrb_graphics_fadeout(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
 {
+  rf_graphics_config *config = get_config(mrb, self);
+  if (config->is_frozen) return mrb_nil_value();
+  config->is_frozen = TRUE;
+  rf_image data = rf_get_screen_data_ez();
+  config->frozen_img = rf_load_texture_from_image(data);
+  config->render_texture = rf_load_render_texture(config->width, config->height);
+  rf_unload_image_ez(data);
   return mrb_nil_value();
 }
 
@@ -127,10 +135,21 @@ mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
+  rf_graphics_config *config = get_config(mrb, self);
   rf_begin();
-  rf_clear(RF_RAYWHITE);
+  rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
+  if (config->is_frozen)
+  {
+    rf_begin_render_to_texture(config->render_texture);
+  }
   // TODO: Draw graphics
+  if (config->is_frozen)
+  {
+    rf_end_render_to_texture();
+    rf_draw_texture(config->frozen_img, 0, 0, RF_RAYWHITE);
+  }
   rf_end();
+  (config->frame_count)++;
   mrb_graphics_frame_reset(mrb, self);
   return mrb_nil_value();
 }
@@ -138,46 +157,78 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_graphics_transition(mrb_state *mrb, mrb_value self)
 {
+  rf_graphics_config *config = get_config(mrb, self);
+  if (!config->is_frozen) return mrb_nil_value();
+  // TODO: Perform transition
+  rf_unload_render_texture(config->render_texture);
+  rf_unload_texture(config->frozen_img);
+  config->is_frozen = FALSE;
+  return mrb_nil_value();
 }
 
 static mrb_value
 mrb_graphics_snap_to_bitmap(mrb_state *mrb, mrb_value self)
 {
+  return mrb_nil_value();
 }
 
 static mrb_value
 mrb_graphics_play_movie(mrb_state *mrb, mrb_value self)
 {
+  return mrb_nil_value();
 }
 
 static mrb_value
 mrb_graphics_get_frame_rate(mrb_state *mrb, mrb_value self)
 {
+  rf_graphics_config *config = get_config(mrb, self);
+  return mrb_fixnum_value(config->frame_rate);
 }
 
 static mrb_value
 mrb_graphics_get_frame_count(mrb_state *mrb, mrb_value self)
 {
+  rf_graphics_config *config = get_config(mrb, self);
+  return mrb_fixnum_value(config->frame_count);
 }
 
 static mrb_value
 mrb_graphics_get_brightness(mrb_state *mrb, mrb_value self)
 {
+  rf_graphics_config *config = get_config(mrb, self);
+  return mrb_fixnum_value(config->brightness);
 }
 
 static mrb_value
 mrb_graphics_set_frame_rate(mrb_state *mrb, mrb_value self)
 {
+  mrb_int fps;
+  rf_graphics_config *config = get_config(mrb, self);
+  mrb_get_args(mrb, "i", &fps);
+  if (fps < 20) fps = 20;
+  if (fps > 480) fps = 480;
+  config->frame_rate = fps;
+  return mrb_fixnum_value(fps);
 }
 
 static mrb_value
 mrb_graphics_set_frame_count(mrb_state *mrb, mrb_value self)
 {
+  mrb_int value;
+  mrb_get_args(mrb, "i", &value);
+  rf_graphics_config *config = get_config(mrb, self);
+  config->frame_count = value;
+  return mrb_fixnum_value(value);
 }
 
 static mrb_value
 mrb_graphics_set_brightness(mrb_state *mrb, mrb_value self)
 {
+  mrb_int value;
+  mrb_get_args(mrb, "i", &value);
+  rf_graphics_config *config = get_config(mrb, self);
+  config->brightness = value > 255 ? 255 : (value < 0 ? 0 : value);
+  return mrb_fixnum_value(value);
 }
 
 static mrb_value
@@ -192,6 +243,7 @@ mrb_config_initialize(mrb_state *mrb, mrb_value self)
   config->is_open = 0;
   config->context = (rf_context){0};
   config->render_batch = (rf_default_render_batch){0};
+  config->is_frozen = 0;
   DATA_TYPE(self) = &config_type;
   DATA_PTR(self) = config;
   mrb_iv_set(mrb, self, TITLE, mrb_str_new_cstr(mrb, "OGSS Game"));
