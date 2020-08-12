@@ -1,9 +1,5 @@
 class GLFW < Dependency
   def libraries
-    []
-  end
-
-  def build_command
-    "cmake #{cmake_configure_flags} .."
+    ['glfw3']
   end
 end

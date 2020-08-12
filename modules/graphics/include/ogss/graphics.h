@@ -27,6 +27,7 @@ struct rf_graphics_config
   mrb_int                    brightness;
   rf_context                 context;
   rf_default_render_batch    render_batch;
+  rf_default_font            default_font;
   mrb_bool                   is_open;
   rf_window_ref              window;
   mrb_value                  title;

@@ -23,7 +23,7 @@ module PlatformDetector
         end
 
         def system_libraries
-          %w[opengl32 user32 Advapi32 shell32 kernel32]
+          %w[opengl32 user32 gdi32 Advapi32 shell32 kernel32]
         end
       end
     end

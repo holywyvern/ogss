@@ -58,7 +58,10 @@ class Dependency
   end
 
   def library_paths
-    [build_dir, File.join(build_dir, 'Release')].filter { |f| File.exist?(f) }
+    [
+      build_dir, File.join(build_dir, 'Release'),
+      File.join(build_dir, 'src'), File.join(build_dir, 'src', 'Release')
+    ].filter { |f| File.exist?(f) }
   end
 
   def libraries

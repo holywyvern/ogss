@@ -12,6 +12,7 @@
     "class.h": "c",
     "deque": "c",
     "initializer_list": "c",
-    "xtree": "c"
+    "xtree": "c",
+    "xiosbase": "c"
   }
 }
