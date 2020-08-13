@@ -73,10 +73,9 @@ mrb_msgbox_error(mrb_state *mrb, mrb_value self)
 {
   mrb_value error;
   mrb_get_args(mrb, "o", &error);
-  mrb_value result = mrb_str_new_cstr(mrb, "Uncaught ");
+  mrb_value result = mrb_str_new_cstr(mrb, "Uncaught Error (backtrace)");
   if (mrb_exception_p(error))
   {
-    result = mrb_str_cat_cstr(mrb, result, mrb_class_name(mrb, mrb_obj_class(mrb, error)));
     result = mrb_str_cat_cstr(mrb, result, ":\n");
     result = append_backtrace(mrb, result, error);
     const char *str = mrb_str_to_cstr(mrb, result);
