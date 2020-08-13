@@ -327,7 +327,7 @@ file_extension(const char *str)
 }
 
 static void
-eval_load_irep(mrb_state *mrb, mrb_irep *irep)
+eval_load_irep(mrb_state *mrb, mrb_irep *irep, mrbc_context *ctx)
 {
   int ai;
   struct RProc *proc;
@@ -383,7 +383,7 @@ load_file(mrb_state *mrb, const char *file)
     mrb_irep *irep = mrb_read_irep_file(mrb, fp);
     fclose(fp);
     if (irep) {
-      eval_load_irep(mrb, irep);
+      eval_load_irep(mrb, irep, ctx);
     } else if (mrb->exc) {
       mrb_gc_arena_restore(mrb, arena);
       mrbc_context_free(mrb, ctx);
