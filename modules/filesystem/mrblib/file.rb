@@ -3,7 +3,13 @@ class File
 
   class << self
     def join(*args)
-      args.join('/')
+      args.map(&:to_s).filter(&:present?).join('/').gsub(%r{/+}, '/')
+    end
+
+    def dirname(file)
+      parts = file.split('/')
+      parts.pop
+      parts.join('/')
     end
 
     def readable?(name)

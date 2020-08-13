@@ -6,7 +6,9 @@
 #include <mruby/string.h>
 #include <mruby/compile.h>
 #include <mruby/proc.h>
-#include "mruby/dump.h"
+#include <mruby/error.h>
+#include <mruby/dump.h>
+#include <mruby/data.h>
 
 #include <rayfork.h>
 #include <physfs.h>
@@ -17,6 +19,7 @@
 #define PHYSFS_ERROR_STR PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
 
 #define REQUIRED_FILES mrb_intern_lit(mrb, "#required_files")
+#define CURRENT_FILE mrb_intern_lit(mrb, "#current_file")
 
 struct mrb_file
 {
@@ -334,14 +337,45 @@ eval_load_irep(mrb_state *mrb, mrb_irep *irep, mrbc_context *ctx)
 
 #ifdef USE_MRUBY_OLD_BYTE_CODE
   replace_stop_with_return(mrb, irep);
-#endif
+#endif 
   proc = mrb_proc_new(mrb, irep);
   mrb_irep_decref(mrb, irep);
   MRB_PROC_SET_TARGET_CLASS(proc, mrb->object_class);
 
   ai = mrb_gc_arena_save(mrb);
+  mrb_value k = mrb_obj_value(mrb->kernel_module);
+  mrb_value dir = mrb_iv_get(mrb, k, CURRENT_FILE);
+  mrb_iv_set(mrb, k, CURRENT_FILE, mrb_str_new_cstr(mrb, ctx->filename));
   mrb_yield_with_class(mrb, mrb_obj_value(proc), 0, NULL, mrb_top_self(mrb), mrb->object_class);
+  mrb_iv_set(mrb, k, CURRENT_FILE, dir);
   mrb_gc_arena_restore(mrb, ai);
+}
+
+struct ctx_str_state
+{
+  mrbc_context *ctx;
+  const char *buffer;
+  size_t      size;
+};
+
+static mrb_value
+load_str_ctx(mrb_state *mrb, mrb_value self)
+{
+  struct ctx_str_state *state;
+  state = self.value.p;
+  return mrb_load_nstring_cxt(mrb, state->buffer, state->size, state->ctx);
+}
+
+static mrb_value
+protected_load(mrb_state *mrb, const char *buffer, size_t size, mrbc_context *ctx, mrb_bool *error)
+{
+  struct ctx_str_state state;
+  mrb_value value;
+  state.ctx = ctx;
+  state.size = size;
+  state.buffer = buffer;
+  value.value.p = (void *)&state;
+  return mrb_protect(mrb, load_str_ctx, value, error);
 }
 
 static void
@@ -396,7 +430,16 @@ load_file(mrb_state *mrb, const char *file)
   }
   else
   {
-    mrb_load_nstring_cxt(mrb, buffer, size, ctx);
+    mrb_value k = mrb_obj_value(mrb->kernel_module);
+    mrb_value dir = mrb_iv_get(mrb, k, CURRENT_FILE);
+    mrb_iv_set(mrb, k, CURRENT_FILE, mrb_str_new_cstr(mrb, ctx->filename));    
+    mrb_bool error;
+    mrb_value exc = protected_load(mrb, buffer, size, ctx, &error);
+    mrb_iv_set(mrb, k, CURRENT_FILE, dir);
+    if (error)
+    {
+      mrb_exc_raise(mrb, exc);
+    }
   }
   mrb_gc_arena_restore(mrb, arena);
   mrbc_context_free(mrb, ctx);
@@ -451,7 +494,7 @@ static mrb_value
 mrb_puts(mrb_state *mrb, mrb_value self)
 {
   mrb_print(mrb, self);
-  fputs("", stdout);
+  fprintf(stdout, "\n");
   return mrb_nil_value();
 }
 
@@ -460,6 +503,13 @@ mrb_get_io_callbacks_for_extensions(mrb_state *mrb, const char **extensions)
 {
   // TODO: Use extensions
   return mrb_get_io_callbacks(mrb);
+}
+
+mrb_value
+mrb_get_current_file(mrb_state *mrb, mrb_value self)
+{
+  mrb_value k = mrb_obj_value(mrb->kernel_module);
+  return mrb_iv_get(mrb, k, CURRENT_FILE);
 }
 
 void
@@ -496,7 +546,11 @@ mrb_setup_filesystem(mrb_state *mrb)
   }
   mrb_define_module_function(mrb, mrb->kernel_module, "load", mrb_load, MRB_ARGS_REQ(1));
   mrb_define_module_function(mrb, mrb->kernel_module, "require", mrb_require, MRB_ARGS_REQ(1));
-  mrb_iv_set(mrb, mrb_obj_value(mrb->kernel_module), REQUIRED_FILES, mrb_hash_new(mrb));
+  mrb_define_module_function(mrb, mrb->kernel_module, "__exc_file__", mrb_get_current_file, MRB_ARGS_NONE());
+
+  mrb_value k = mrb_obj_value(mrb->kernel_module);
+  mrb_iv_set(mrb, k, REQUIRED_FILES, mrb_hash_new(mrb));
+  mrb_iv_set(mrb, k, CURRENT_FILE, mrb_str_new_cstr(mrb, ""));
 
   mrb_define_module_function(mrb, mrb->kernel_module, "print", mrb_print, MRB_ARGS_REQ(1)|MRB_ARGS_REST());
   mrb_define_module_function(mrb, mrb->kernel_module, "puts", mrb_puts, MRB_ARGS_REQ(1)|MRB_ARGS_REST());
