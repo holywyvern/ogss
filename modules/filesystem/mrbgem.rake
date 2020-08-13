@@ -3,4 +3,6 @@ MRuby::Gem::Specification.new('ogss-filesystem') do |spec|
   spec.author  = 'Ramiro Rojo'
 
   spec.add_dependency 'ogss-dependencies'
+
+  spec.add_dependency 'mruby-compiler'
 end

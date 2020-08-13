@@ -13,6 +13,7 @@
     "deque": "c",
     "initializer_list": "c",
     "xtree": "c",
-    "xiosbase": "c"
+    "xiosbase": "c",
+    "ios": "cpp"
   }
 }

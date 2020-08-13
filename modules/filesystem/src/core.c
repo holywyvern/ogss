@@ -2,13 +2,21 @@
 
 #include <mruby.h>
 #include <mruby/variable.h>
+#include <mruby/hash.h>
 #include <mruby/string.h>
+#include <mruby/compile.h>
+#include <mruby/proc.h>
+#include "mruby/dump.h"
 
 #include <rayfork.h>
 #include <physfs.h>
 
+#include <setjmp.h>
+
 #define E_FILE_ERROR mrb_exc_get(mrb, "FileError")
 #define PHYSFS_ERROR_STR PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())
+
+#define REQUIRED_FILES mrb_intern_lit(mrb, "#required_files")
 
 struct mrb_file
 {
@@ -30,12 +38,58 @@ alloc_file(mrb_state *mrb, const char *name, PHYSFS_File *fp)
   return file;
 }
 
+static mrb_file *
+alloc_file_with_extension(mrb_state *mrb, const char *name, const char *extension)
+{
+  PHYSFS_File *fp;
+  size_t name_len = strlen(name);
+  size_t ext_size = strlen(extension);
+  size_t size = name_len + ext_size;
+  char *name_with_ext = mrb_alloca(mrb, size);
+  strncpy_s(name_with_ext, size, name_with_ext, name_len);
+  strncpy_s(&(name_with_ext[name_len]), ext_size, extension, ext_size);
+  fp = PHYSFS_openRead(name_with_ext);
+  if (!fp)
+  {
+    return NULL;
+  }
+  mrb_file *file = (mrb_file *)mrb_malloc(mrb, sizeof *file);
+  file->file = fp;
+  file->mode = MRB_FILE_READ;
+  file->mrb = mrb;
+  return file;
+}
+
 mrb_file *
 mrb_file_open_read(mrb_state *mrb, const char *name)
 {
   PHYSFS_File *fp;
   fp = PHYSFS_openRead(name);
   mrb_file *file = alloc_file(mrb, name, fp);
+  file->mode = MRB_FILE_READ;
+  return file;
+}
+
+mrb_file *
+mrb_file_open_read_with_extensions(mrb_state *mrb, const char *name, const char **extensions)
+{
+  mrb_file *file;
+  while (*extensions)
+  {
+    int arena = mrb_gc_arena_save(mrb);
+    file = alloc_file_with_extension(mrb, name, *extensions);
+    if (file)
+    {
+      mrb_gc_arena_restore(mrb, arena);
+      break;
+    }
+    ++extensions;
+    mrb_gc_arena_restore(mrb, arena);
+  }
+  if (!file)
+  {
+    mrb_raisef(mrb, E_FILE_ERROR, "Unable to open file '%s' (%s)", name, PHYSFS_ERROR_STR);
+  }
   file->mode = MRB_FILE_READ;
   return file;
 }
@@ -239,6 +293,127 @@ physfs_free(void *ptr)
   mrb_free(current_physfs_mrb, ptr);
 }
 
+const char *RUBY_FILE_EXTENSIONS[] = {
+  "",
+  ".mrb",
+  ".rb",
+  NULL
+};
+
+mrb_value
+mrb_file_detect_extension(mrb_state *mrb, const char *file, char **extensions)
+{
+  mrb_value real_name = mrb_str_new_cstr(mrb, file);
+  while (*extensions)
+  {
+    int arena = mrb_gc_arena_save(mrb);
+    mrb_value name = mrb_str_cat_cstr(mrb, mrb_str_dup(mrb, real_name), *extensions);
+    if (mrb_file_exists(mrb_str_to_cstr(mrb, name)))
+    {
+      mrb_gc_arena_restore(mrb, arena);
+      return name;
+    }
+    mrb_gc_arena_restore(mrb, arena);
+    ++extensions;
+  }
+  mrb_raisef(mrb, E_FILE_ERROR, "Cannot load file '%s' (file not found).", file);
+  return mrb_nil_value();
+}
+
+const char *
+file_extension(const char *str)
+{
+  return strrchr(str, '.');
+}
+
+static void
+eval_load_irep(mrb_state *mrb, mrb_irep *irep)
+{
+  int ai;
+  struct RProc *proc;
+
+#ifdef USE_MRUBY_OLD_BYTE_CODE
+  replace_stop_with_return(mrb, irep);
+#endif
+  proc = mrb_proc_new(mrb, irep);
+  mrb_irep_decref(mrb, irep);
+  MRB_PROC_SET_TARGET_CLASS(proc, mrb->object_class);
+
+  ai = mrb_gc_arena_save(mrb);
+  mrb_yield_with_class(mrb, mrb_obj_value(proc), 0, NULL, mrb_top_self(mrb), mrb->object_class);
+  mrb_gc_arena_restore(mrb, ai);
+}
+
+static void
+load_file(mrb_state *mrb, const char *file)
+{
+  int arena = mrb_gc_arena_save(mrb);
+  mrb_value name = mrb_file_detect_extension(mrb, file, RUBY_FILE_EXTENSIONS);
+  const char *real_name = mrb_str_to_cstr(mrb, name);
+  mrb_file *fp = mrb_file_open_read(mrb, real_name);
+  size_t size = mrb_file_length(fp);
+  char *buffer = mrb_alloca(mrb, size);
+  mrb_file_read(fp, size, buffer);
+  mrbc_context *ctx = mrbc_context_new(mrb);
+  mrbc_filename(mrb, ctx, file);
+  if (strcmp(file_extension(real_name), ".mrb") == 0)
+  {
+    FILE *fp = tmpfile();
+    if (!fp)
+    {
+      mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to load temporary file.");
+    }
+    if (fwrite(buffer, size, 1, fp) < 1)
+    {
+      mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to write to temporary file.");
+    };
+    if (fflush(fp))
+    {
+      mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to flush temporary file.");
+    }
+    rewind(fp);
+    mrb_irep *irep = mrb_read_irep_file(mrb, fp);
+    fclose(fp);
+    if (irep) {
+      eval_load_irep(mrb, irep);
+    } else if (mrb->exc) {
+      longjmp(*(jmp_buf*)mrb->jmp, 1);
+    } else {
+      mrb_raisef(mrb, E_FILE_ERROR, "Failed to load file '%s'.", file);
+    }
+  }
+  else
+  {
+    mrb_load_nstring_cxt(mrb, buffer, size, ctx);
+  }
+  mrb_gc_arena_restore(mrb, arena);
+  mrbc_context_free(mrb, ctx);
+}
+
+static mrb_value
+mrb_load(mrb_state *mrb, mrb_value self)
+{
+  const char *file;
+  mrb_get_args(mrb, "z", &file);
+  load_file(mrb, file);
+  return mrb_nil_value();
+}
+
+static mrb_value
+mrb_require(mrb_state *mrb, mrb_value self)
+{
+  mrb_value file;
+  mrb_get_args(mrb, "S", &file);
+  mrb_value hash = mrb_iv_get(mrb, mrb_obj_value(mrb->kernel_module), REQUIRED_FILES);
+  if (mrb_hash_key_p(mrb, hash, file))
+  {
+    return mrb_false_value();
+  }
+  load_file(mrb, mrb_str_to_cstr(mrb, file));
+  mrb_hash_set(mrb, hash, file, mrb_true_value());
+  return mrb_true_value();
+}
+
 void
 mrb_setup_filesystem(mrb_state *mrb)
 {
@@ -271,6 +446,9 @@ mrb_setup_filesystem(mrb_state *mrb)
     PHYSFS_mount(PHYSFS_getBaseDir(), NULL, 1);
     mrb_file_set_write(mrb, "OGSS Games", "Default");
   }
+  mrb_define_module_function(mrb, mrb->kernel_module, "load", mrb_load, MRB_ARGS_REQ(1));
+  mrb_define_module_function(mrb, mrb->kernel_module, "require", mrb_require, MRB_ARGS_REQ(1));
+  mrb_iv_set(mrb, mrb_obj_value(mrb->kernel_module), REQUIRED_FILES, mrb_hash_new(mrb));
 }
 
 void

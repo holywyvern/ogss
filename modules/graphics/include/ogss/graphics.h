@@ -4,6 +4,8 @@
 #include <mruby.h>
 #include <rayfork.h>
 
+#include <ogss/drawable.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,7 +28,7 @@ struct rf_graphics_config
   mrb_int                    frame_count;
   mrb_int                    brightness;
   rf_context                 context;
-  rf_default_render_batch    render_batch;
+  rf_render_batch            render_batch;
   rf_default_font            default_font;
   mrb_bool                   is_open;
   rf_window_ref              window;
@@ -35,7 +37,11 @@ struct rf_graphics_config
   mrb_bool                   is_frozen;
   rf_texture2d               frozen_img;
   rf_render_texture2d        render_texture;
+  rf_container               container;
 };
+
+rf_container *
+mrb_get_graphics_container(mrb_state *mrb);
 
 #ifdef __cplusplus
 }

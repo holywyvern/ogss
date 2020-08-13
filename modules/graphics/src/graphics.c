@@ -4,13 +4,19 @@
 #include <mruby/variable.h>
 #include <mruby/string.h>
 #include <mruby/object.h>
+#include <mruby/error.h>
 
 #include <rayfork.h>
 
+#include <ogss/drawable.h>
 #include <ogss/graphics.h>
 
 #define CONFIG mrb_intern_lit(mrb, "#config")
 #define TITLE mrb_intern_lit(mrb, "#title")
+
+#define DEFAULT_VERTEX_BUFFERS_COUNT 1024
+
+static const default_vertex_buffers[DEFAULT_VERTEX_BUFFERS_COUNT] = { 0 };
 
 static const mrb_data_type config_type = {
   "Graphics::Config", mrb_free
@@ -30,6 +36,13 @@ get_config(mrb_state *mrb, mrb_value self)
   Data_Get_Struct(mrb, config_value, &config_type, config);
   config->title = mrb_iv_get(mrb, config_value, TITLE);
   return config;
+}
+
+rf_container *
+mrb_get_graphics_container(mrb_state *mrb)
+{
+  mrb_value graphics = mrb_obj_value(mrb_class_get(mrb, "Graphics"));
+  return &(get_config(mrb, graphics)->container);
 }
 
 static mrb_value
@@ -138,12 +151,15 @@ static mrb_value
 mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
   rf_graphics_config *config = get_config(mrb, self);
+  rf_set_active_render_batch(&(config->render_batch));
   rf_begin();
+  // TODO: prepare viewports
   rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
   if (config->is_frozen)
   {
     rf_begin_render_to_texture(config->render_texture);
   }
+  rf_camera2d cam = {0};
   // TODO: Draw graphics
   if (config->is_frozen)
   {
@@ -244,13 +260,22 @@ mrb_config_initialize(mrb_state *mrb, mrb_value self)
   config->brightness = 255;
   config->is_open = 0;
   config->context = (rf_context){0};
-  config->render_batch = (rf_default_render_batch){0};
+  config->render_batch = (rf_render_batch){0};
   config->is_frozen = 0;
   config->data = NULL;
+  mrb_container_init(mrb, &(config->container));
   DATA_TYPE(self) = &config_type;
   DATA_PTR(self) = config;
+  config->render_batch.vertex_buffers = &default_vertex_buffers;
+  config->render_batch.vertex_buffers_count = DEFAULT_VERTEX_BUFFERS_COUNT;
   mrb_iv_set(mrb, self, TITLE, mrb_str_new_cstr(mrb, "OGSS Game"));
   return mrb_nil_value();
+}
+
+static mrb_value
+call_block(mrb_state *mrb, mrb_value block)
+{
+  return mrb_funcall(mrb, block, "call", 0);
 }
 
 static mrb_value
@@ -278,7 +303,9 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
 #endif
   rf_init(&(config->context), config->width, config->height, RF_DEFAULT_LOGGER, config->data);
   config->is_open = 1;
-  mrb_funcall(mrb, block, "call", 0);
+  mrb_bool error;
+  mrb_value ret = mrb_protect(mrb, call_block, block, &error);
+  if (error) mrb_exc_raise(mrb, ret);
   config->is_open = 0;
 #ifdef OGSS_PLATFORM_GLFW
   glfwDestroyWindow(config->window);

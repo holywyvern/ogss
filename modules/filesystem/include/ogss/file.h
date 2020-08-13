@@ -36,7 +36,7 @@ mrb_file *
 mrb_file_open_read(mrb_state *mrb, const char *name);
 
 mrb_file *
-mrb_file_open_read(mrb_state *mrb, const char *name);
+mrb_file_open_read_with_extensions(mrb_state *mrb, const char *name, const char **extensions);
 
 void
 mrb_file_close(mrb_file *file);
