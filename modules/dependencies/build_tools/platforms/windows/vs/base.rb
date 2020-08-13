@@ -19,7 +19,7 @@ module PlatformDetector
         end
 
         def system_dependencies
-          [GLFW.new(self), GLAD.new(self), PhysFS.new(self)]
+          [GLFW.new(self), GLAD.new(self), PhysFS.new(self), Boxer.new(self)]
         end
 
         def system_libraries

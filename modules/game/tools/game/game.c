@@ -7,8 +7,10 @@
 #include <mruby.h>
 #include <mruby/array.h>
 #include <mruby/variable.h>
+#include <mruby/error.h>
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
   mrb_state *mrb = mrb_open();
   mrb_value ARGV = mrb_ary_new_capa(mrb, argc - 1);
@@ -20,12 +22,10 @@ int main(int argc, char *argv[])
     mrb_ary_push(mrb, ARGV, mrb_str_new_cstr(mrb, argv[i]));
   }
   mrb_define_global_const(mrb, "ARGV", ARGV);
-
-  mrb_funcall(mrb, mrb_top_self(mrb), "__main__", 1, ARGV);
-
+  mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "require", 1, mrb_str_new_cstr(mrb, "main"));
   return_value = EXIT_SUCCESS;
-
   if (mrb->exc) {
+    mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "msgbox_error", 1, mrb_obj_value(mrb->exc));
     mrb_print_error(mrb);
     return_value = EXIT_FAILURE;
   }

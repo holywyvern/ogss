@@ -118,8 +118,21 @@ file dgs: :mruby do
   end
 end
 
+file boxer: :mruby do
+  MRUBY_BUILD_HOSTS.each do |host|
+    dependency_dir = File.join('mruby', 'build', host, 'dependencies')
+    boxer_dir = File.join(dependency_dir, 'boxer')
+    next if File.exist?(boxer_dir)
+
+    FileUtils.mkdir_p(dependency_dir)
+    Dir.chdir dependency_dir do
+      sh 'git clone --recursive https://github.com/aaronmjacobs/Boxer.git boxer'
+    end
+  end
+end
+
 desc 'compile binary'
-task compile: %i[mruby rayfork glfw glad physfs dgs] do
+task compile: %i[mruby rayfork glfw glad physfs dgs boxer] do
   sh "cd mruby && rake all MRUBY_CONFIG=#{MRUBY_CONFIG} DEBUG=#{DEBUG}"
 end
 
