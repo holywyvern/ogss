@@ -361,14 +361,22 @@ load_file(mrb_state *mrb, const char *file)
     FILE *fp = tmpfile();
     if (!fp)
     {
+      mrb_gc_arena_restore(mrb, arena);
+      mrbc_context_free(mrb, ctx);
       mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to load temporary file.");
     }
     if (fwrite(buffer, size, 1, fp) < 1)
     {
+      mrb_gc_arena_restore(mrb, arena);
+      mrbc_context_free(mrb, ctx);
+      fclose(fp);
       mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to write to temporary file.");
     };
     if (fflush(fp))
     {
+      mrb_gc_arena_restore(mrb, arena);
+      mrbc_context_free(mrb, ctx);
+      fclose(fp);
       mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to flush temporary file.");
     }
     rewind(fp);
@@ -377,8 +385,12 @@ load_file(mrb_state *mrb, const char *file)
     if (irep) {
       eval_load_irep(mrb, irep);
     } else if (mrb->exc) {
+      mrb_gc_arena_restore(mrb, arena);
+      mrbc_context_free(mrb, ctx);
       longjmp(*(jmp_buf*)mrb->jmp, 1);
     } else {
+      mrb_gc_arena_restore(mrb, arena);
+      mrbc_context_free(mrb, ctx);
       mrb_raisef(mrb, E_FILE_ERROR, "Failed to load file '%s'.", file);
     }
   }
@@ -412,6 +424,35 @@ mrb_require(mrb_state *mrb, mrb_value self)
   load_file(mrb, mrb_str_to_cstr(mrb, file));
   mrb_hash_set(mrb, hash, file, mrb_true_value());
   return mrb_true_value();
+}
+
+static mrb_value
+mrb_print(mrb_state *mrb, mrb_value self)
+{
+  mrb_int argc;
+  mrb_value *argv;
+  mrb_get_args(mrb, "*", &argv, &argc);
+  if (argc < 1)
+  {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "Print requires an object");
+  }
+  for (mrb_int i = 0; i < argc; ++i)
+  {
+    int arena = mrb_gc_arena_save(mrb);
+    mrb_value obj = mrb_to_str(mrb, mrb_funcall(mrb, argv[i], "to_s", 0));
+    const char *str = mrb_str_to_cstr(mrb, obj);
+    fprintf(stdout, "%s", str);
+    mrb_gc_arena_restore(mrb, arena);
+  }
+  return mrb_nil_value();
+}
+
+static mrb_value
+mrb_puts(mrb_state *mrb, mrb_value self)
+{
+  mrb_print(mrb, self);
+  fputs("", stdout);
+  return mrb_nil_value();
 }
 
 void
@@ -449,6 +490,9 @@ mrb_setup_filesystem(mrb_state *mrb)
   mrb_define_module_function(mrb, mrb->kernel_module, "load", mrb_load, MRB_ARGS_REQ(1));
   mrb_define_module_function(mrb, mrb->kernel_module, "require", mrb_require, MRB_ARGS_REQ(1));
   mrb_iv_set(mrb, mrb_obj_value(mrb->kernel_module), REQUIRED_FILES, mrb_hash_new(mrb));
+
+  mrb_define_module_function(mrb, mrb->kernel_module, "print", mrb_print, MRB_ARGS_REQ(1)|MRB_ARGS_REST());
+  mrb_define_module_function(mrb, mrb->kernel_module, "puts", mrb_puts, MRB_ARGS_REQ(1)|MRB_ARGS_REST());
 }
 
 void
