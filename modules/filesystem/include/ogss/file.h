@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+#define E_LOAD_ERROR mrb_exc_get(mrb, "LoadError")
+
 enum mrb_file_mode
 {
   MRB_FILE_READ,
@@ -73,6 +75,9 @@ mrb_file_set_write(mrb_state *mrb, const char *org, const char *name);
 
 rf_io_callbacks
 mrb_get_io_callbacks(mrb_state *mrb);
+
+rf_io_callbacks
+mrb_get_io_callbacks_for_extensions(mrb_state *mrb, const char **extensions);
 
 mrb_bool
 mrb_file_mkdir(mrb_state *mrb, const char *name);

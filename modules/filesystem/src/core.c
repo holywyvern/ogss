@@ -455,6 +455,13 @@ mrb_puts(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+rf_io_callbacks
+mrb_get_io_callbacks_for_extensions(mrb_state *mrb, const char **extensions)
+{
+  // TODO: Use extensions
+  return mrb_get_io_callbacks(mrb);
+}
+
 void
 mrb_setup_filesystem(mrb_state *mrb)
 {

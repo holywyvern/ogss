@@ -352,6 +352,7 @@ mrb_init_file(mrb_state *mrb)
   struct RClass *error = mrb_define_class(mrb, "IOError", mrb->eStandardError_class);
   error = mrb_define_class(mrb, "FileError", error);
   mrb_define_class(mrb, "EOFError", error);
+  mrb_define_class(mrb, "LoadError", error);
   struct RClass *file = mrb_define_class(mrb, "File", mrb->object_class);
   MRB_SET_INSTANCE_TT(file, MRB_TT_DATA);
 

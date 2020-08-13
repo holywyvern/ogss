@@ -26,6 +26,12 @@ font_free(mrb_state *mrb, void *ptr)
 
 const struct mrb_data_type mrb_font_data_type = { "Font", font_free };
 
+static const char *FONT_EXTENSIONS[] = {
+  "",
+  ".ttf",
+  NULL,
+};
+
 static mrb_value
 font_initialize(mrb_state *mrb, mrb_value self)
 {
@@ -37,12 +43,16 @@ font_initialize(mrb_state *mrb, mrb_value self)
   if (argc < 3) antialias = mrb_get_default_font_antialias(mrb);
   if (argc < 2) size = mrb_get_default_font_size(mrb);
   if (argc < 1) filename = mrb_get_default_font_name(mrb);
+  if (!mrb_file_exists(filename))
+  {
+    mrb_raisef(mrb, E_LOAD_ERROR, "Cannot load font '%s'", filename);
+  }
   if (size < 1)
   {
     mrb_raise(mrb, E_ARGUMENT_ERROR, "Font size must be positive");
   }
   rf_allocator alloc = mrb_get_allocator(mrb);
-  rf_io_callbacks io = mrb_get_io_callbacks(mrb);
+  rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, FONT_EXTENSIONS);
   rf_font_antialias aa = antialias ? RF_FONT_ANTIALIAS : RF_FONT_NO_ANTIALIAS;
   rf_font font = rf_load_ttf_font_from_file(filename, size, aa, alloc, alloc, io);
   rf_font *data = mrb_malloc(mrb, sizeof *data);

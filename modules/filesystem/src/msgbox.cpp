@@ -19,7 +19,7 @@ mrb_msgbox(mrb_state *mrb, mrb_value self)
   mrb_value result = mrb_str_new_cstr(mrb, "");
   for (mrb_int i = 0; i < argc; ++i)
   {
-    result = mrb_str_cat_str(mrb, result, argv[i]);
+    result = mrb_str_cat_str(mrb, result, mrb_to_str(mrb, mrb_funcall(mrb, argv[i], "to_s", 0)));
     if (i < (argc - 1))
     {
       result = mrb_str_cat_cstr(mrb, result, "\n");
