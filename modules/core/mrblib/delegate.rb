@@ -1,19 +1,23 @@
 class Module
-  # rubocop:disable Metrics/MethodLength, Security/Eval
-  def delegate(*methods, to:, prefix: nil, allow_nil: nil)
-    method_prefix =
-      if prefix
-        "#{prefix == true ? prefix : to}_"
+  # rubocop:disable Metrics/MethodLength
+  def delegate(*methods, to:, prefix: false, allow_nil: false)
+    prefix = "#{to}_" if prefix == true
+    prefix = "#{prefix}_" if prefix == false
+
+    methods.each do |name|
+      method_name = "#{prefix}#{name}"
+      if /\=$/.match?(name.to_s)
+        define_method(method_name) { |value| send(to)&.send(name, value) }
       else
-        ''
-      end
-    methods.each do |method|
-      eval <<-DEFINE, __exc_file__, __LINE__ + 1
-        def #{method_prefix}#{method}
-          #{to}#{allow_nil ? '&' : ''}.#{method}
+        define_method(method_name) do |*args, **karg, &blk|
+          if allow_nil
+            send(to)&.send(name, *args, **karg, &blk)
+          else
+            send(to).send(name, *args, **karg, &blk)
+          end
         end
-      DEFINE
+      end
     end
   end
-  # rubocop:enable Metrics/MethodLength, Security/Eval
+  # rubocop:enable Metrics/MethodLength
 end
