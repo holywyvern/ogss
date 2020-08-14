@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define E_DISPOSED_ERROR mrb_exc_get(mrb, "DisposedError")
+
 typedef struct rf_drawable rf_drawable;
 typedef struct rf_container rf_container;
 
