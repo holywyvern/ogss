@@ -189,7 +189,7 @@ mrb_rect_load(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_rect(mrb_state *mrb)
+mrb_init_ogss_rect(mrb_state *mrb)
 {
   struct RClass *rect = mrb_define_class(mrb, "Rect", mrb->object_class);
   MRB_SET_INSTANCE_TT(rect, MRB_TT_DATA);

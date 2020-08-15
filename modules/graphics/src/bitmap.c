@@ -9,6 +9,7 @@
 #include <ogss/font.h>
 #include <ogss/bitmap.h>
 #include <ogss/file.h>
+#include <ogss/rect.h>
 
 static const char *IMAGE_EXTENSIONS[] = {
   "",
@@ -87,6 +88,27 @@ bitmap_initialize_copy(mrb_state *mrb, mrb_value self)
   bmp->texture = rf_load_texture_from_image(img);
   bmp->dirty = FALSE;
   return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_rect(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_rect_new(mrb, 0, 0, bmp->image.width, bmp->image.height);
+}
+
+static mrb_value
+bitmap_get_width(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_fixnum_value(bmp->image.width);
+}
+
+static mrb_value
+bitmap_get_height(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_fixnum_value(bmp->image.height);
 }
 
 static mrb_value
@@ -232,6 +254,10 @@ mrb_init_ogss_bitmap(mrb_state *mrb)
 
   mrb_define_method(mrb, bitmap, "initialize", bitmap_initialize, MRB_ARGS_OPT(2));
   mrb_define_method(mrb, bitmap, "initialize_copy", bitmap_initialize_copy, MRB_ARGS_REQ(1));
+
+  mrb_define_class_method(mrb, bitmap, "rect", bitmap_rect, MRB_ARGS_NONE());
+  mrb_define_class_method(mrb, bitmap, "width", bitmap_get_width, MRB_ARGS_NONE());
+  mrb_define_class_method(mrb, bitmap, "height", bitmap_get_height, MRB_ARGS_NONE());
 
   mrb_define_class_method(mrb, bitmap, "cellular", bitmap_s_cellular, MRB_ARGS_ANY());
   mrb_define_class_method(mrb, bitmap, "checked", bitmap_s_checked, MRB_ARGS_ANY());

@@ -103,7 +103,7 @@ static mrb_value
 mrb_table_initialize_copy(mrb_state *mrb, mrb_value self)
 {
   rf_table *table, *original;
-  mrb_get_args("d", &original, &mrb_table_data_type);
+  mrb_get_args(mrb, "d", &original, &mrb_table_data_type);
   table = alloc_table(mrb, original->xsize * original->ysize * original->zsize);
   table->xsize = original->xsize;
   table->ysize = original->ysize;
@@ -198,9 +198,9 @@ mrb_table_resize(mrb_state *mrb, mrb_value self)
   new_table.elements = mrb_malloc(mrb, length * sizeof(uint16_t));
   table_copy(&new_table, table);
   mrb_free(mrb, table->elements);
-  table->xsize = xsize;
-  table->ysize = ysize;
-  table->zsize = zsize;
+  table->xsize = (uint32_t)xsize;
+  table->ysize = (uint32_t)ysize;
+  table->zsize = (uint32_t)zsize;
   table->elements = new_table.elements;
   return mrb_nil_value();
 }
@@ -267,7 +267,7 @@ mrb_table_load(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_table(mrb_state *mrb)
+mrb_init_ogss_table(mrb_state *mrb)
 {
   struct RClass *table = mrb_define_class(mrb, "Table", mrb->object_class);
   MRB_SET_INSTANCE_TT(table, MRB_TT_DATA);
