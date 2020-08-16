@@ -16,7 +16,7 @@
 
 #define DEFAULT_VERTEX_BUFFERS_COUNT 1024
 
-static const default_vertex_buffers[DEFAULT_VERTEX_BUFFERS_COUNT] = { 0 };
+static rf_vertex_buffer default_vertex_buffers[DEFAULT_VERTEX_BUFFERS_COUNT] = { 0 };
 
 static const mrb_data_type config_type = {
   "Graphics::Config", mrb_free
@@ -128,7 +128,7 @@ mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
   config->is_frozen = TRUE;
   rf_image data = rf_get_screen_data_ez();
   config->frozen_img = rf_load_texture_from_image(data);
-  config->render_texture = rf_load_render_texture(config->width, config->height);
+  config->render_texture = rf_load_render_texture((int)config->width, (int)config->height);
   rf_unload_image_ez(data);
   return mrb_nil_value();
 }
@@ -153,14 +153,14 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
   rf_graphics_config *config = get_config(mrb, self);
   rf_set_active_render_batch(&(config->render_batch));
   rf_begin();
-  // TODO: prepare viewports
+  mrb_container_update(mrb, &(config->container));
   rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
   if (config->is_frozen)
   {
     rf_begin_render_to_texture(config->render_texture);
   }
   rf_camera2d cam = {0};
-  // TODO: Draw graphics
+  mrb_container_draw_children(&(config->container));
   if (config->is_frozen)
   {
     rf_end_render_to_texture();
@@ -289,7 +289,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
 #ifdef OGSS_PLATFORM_GLFW
   if (!glfwInit()) mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to create game screen");
   title = mrb_str_to_cstr(mrb, config->title);
-  config->window = glfwCreateWindow(config->width, config->height, title, NULL, NULL);
+  config->window = glfwCreateWindow((int)config->width, (int)config->height, title, NULL, NULL);
   if (!config->window) mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to create game screen");
   glfwMakeContextCurrent(config->window);
   glfwSwapInterval(1);
@@ -301,7 +301,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   rf_opengl_procs *procs = (rf_opengl_procs *)config->data;
   *procs = RF_DEFAULT_OPENGL_PROCS;
 #endif
-  rf_init(&(config->context), config->width, config->height, RF_DEFAULT_LOGGER, config->data);
+  rf_init(&(config->context), (int)config->width, (int)config->height, RF_DEFAULT_LOGGER, config->data);
   config->is_open = 1;
   mrb_bool error;
   mrb_value ret = mrb_protect(mrb, call_block, block, &error);

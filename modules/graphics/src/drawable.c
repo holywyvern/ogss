@@ -25,6 +25,9 @@ index_of(rf_container *parent, rf_drawable *child)
 void
 mrb_container_init(mrb_state *mrb, rf_container *container)
 {
+  container->base.z = 0;
+  container->base.update = (rf_drawable_update_callback)mrb_container_update;
+  container->base.draw   = (rf_drawable_draw_callback)mrb_container_draw_children;
   container->items_capa = 7;
   container->items_size = 0;
   container->items = mrb_malloc(mrb, 7 * sizeof(*(container->items)));
@@ -70,14 +73,21 @@ mrb_container_remove_child(mrb_state *mrb, rf_container *parent, rf_drawable *ch
 }
 
 void
-mrb_container_refresh(mrb_state *mrb, rf_container *container)
+mrb_container_update(mrb_state *mrb, rf_container *container)
 {
-  if (container->dirty) {
+  if (container->dirty)
+  {
     container->dirty = FALSE;
     qsort(container->items, container->items_size, sizeof(*(container->items)), sort_by_z);
   }
+  for (mrb_int i = 0; i < container->items_size; ++i)
+  {
+    rf_drawable *item = container->items[i];
+    container->items[i]->update(mrb, item);
+  }
 }
 
+void
 mrb_container_draw_children(rf_container *container)
 {
   for (mrb_int i = 0; i < container->items_size; ++i)
