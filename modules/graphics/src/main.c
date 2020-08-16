@@ -13,6 +13,12 @@ void
 mrb_init_ogss_bitmap(mrb_state *mrb);
 
 void
+mrb_init_ogss_viewport(mrb_state *mrb);
+
+void
+mrb_init_ogss_sprite(mrb_state *mrb);
+
+void
 mrb_ogss_graphics_gem_init(mrb_state *mrb)
 {
   mrb_define_class(mrb, "DisposedError", mrb->eStandardError_class);
@@ -20,6 +26,8 @@ mrb_ogss_graphics_gem_init(mrb_state *mrb)
   mrb_init_ogss_font(mrb);
   mrb_init_ogss_graphics(mrb);
   mrb_init_ogss_bitmap(mrb);
+  mrb_init_ogss_viewport(mrb);
+  mrb_init_ogss_sprite(mrb);
 }
 
 void

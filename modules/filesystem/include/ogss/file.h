@@ -68,6 +68,12 @@ mrb_bool
 mrb_file_exists(const char *filename);
 
 mrb_bool
+mrb_file_is_file(const char *filename);
+
+mrb_bool
+mrb_file_is_folder(const char *filename);
+
+mrb_bool
 mrb_file_exists_with_extensions(mrb_state *mrb, const char *filename, const char **extensions);
 
 void

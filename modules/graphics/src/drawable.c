@@ -26,6 +26,7 @@ void
 mrb_container_init(mrb_state *mrb, rf_container *container)
 {
   container->base.z = 0;
+  container->base.container = NULL;
   container->base.update = (rf_drawable_update_callback)mrb_container_update;
   container->base.draw   = (rf_drawable_draw_callback)mrb_container_draw_children;
   container->items_capa = 7;
@@ -36,15 +37,24 @@ mrb_container_init(mrb_state *mrb, rf_container *container)
 void
 mrb_container_free(mrb_state *mrb, rf_container *container)
 {
+  for (mrb_int i = 0; i < container->items_size; ++i)
+  {
+    container->items[i]->container = NULL;
+  }
   mrb_free(mrb, container->items);
 }
 
 void
 mrb_container_add_child(mrb_state *mrb, rf_container *parent, rf_drawable *child)
 {
+  if (!parent || !child) return;
   mrb_int index = index_of(parent, child);
   if (index < 0)
   {
+    if (child->container)
+    {
+      mrb_container_remove_child(mrb, child->container, child);
+    }
     mrb_int next_size = parent->items_size + 1;
     while (next_size >= parent->items_capa)
     {
@@ -54,13 +64,15 @@ mrb_container_add_child(mrb_state *mrb, rf_container *parent, rf_drawable *child
     }
     parent->items[parent->items_size] = child;
     parent->items_size = next_size;
+    child->container = parent;
+    parent->dirty = TRUE;
   }
-  parent->dirty = TRUE;
 }
 
 void
 mrb_container_remove_child(mrb_state *mrb, rf_container *parent, rf_drawable *child)
 {
+  if (!parent || !child) return;
   mrb_int index = index_of(parent, child);
   if (index >= 0)
   {
@@ -69,6 +81,7 @@ mrb_container_remove_child(mrb_state *mrb, rf_container *parent, rf_drawable *ch
       parent->items[i] = parent->items[i + 1];
     }
     parent->items_size -= 1;
+    child->container = NULL;
   }
 }
 

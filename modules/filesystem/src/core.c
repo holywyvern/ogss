@@ -196,6 +196,22 @@ mrb_file_exists(const char *filename)
 }
 
 mrb_bool
+mrb_file_is_file(const char *filename)
+{
+  PHYSFS_Stat stat;
+  PHYSFS_stat(filename, &stat);
+  return stat.filetype == PHYSFS_FILETYPE_REGULAR;
+}
+
+mrb_bool
+mrb_file_is_folder(const char *filename)
+{
+  PHYSFS_Stat stat;
+  PHYSFS_stat(filename, &stat);
+  return stat.filetype == PHYSFS_FILETYPE_DIRECTORY;
+}
+
+mrb_bool
 mrb_file_exists_with_extensions(mrb_state *mrb, const char *filename, const char **extensions)
 {
   mrb_value name = mrb_str_new_cstr(mrb, filename);
@@ -203,7 +219,8 @@ mrb_file_exists_with_extensions(mrb_state *mrb, const char *filename, const char
   {
     int arena = mrb_gc_arena_save(mrb);
     mrb_value name_with_ext = mrb_str_cat_cstr(mrb, mrb_str_dup(mrb, name), *extensions);
-    if (mrb_file_exists(mrb_str_to_cstr(mrb, name_with_ext)))
+    const char *str = mrb_str_to_cstr(mrb, name_with_ext);
+    if (mrb_file_exists(str) && mrb_file_is_file(str))
     {
       mrb_gc_arena_restore(mrb, arena);
       return TRUE;

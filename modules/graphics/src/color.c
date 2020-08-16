@@ -156,6 +156,21 @@ color_set_alpha(mrb_state *mrb, mrb_value self)
   return mrb_fixnum_value(value);
 }
 
+static mrb_value
+color_equal(mrb_state *mrb, mrb_value self)
+{
+  mrb_value other;
+  mrb_get_args(mrb, "o", &other);
+  if (mrb_color_p(other))
+  {
+    rf_color *a = mrb_get_color(mrb, self);
+    rf_color *b = mrb_get_color(mrb, other);
+    mrb_bool cmp = (a->r == b->r) && (a->g == b->g) && (a->b == b->b) && (a->a == b->a);
+    return mrb_bool_value(cmp);
+  }
+  return mrb_false_value();
+}
+
 void
 mrb_init_ogss_color(mrb_state *mrb)
 {
@@ -184,4 +199,6 @@ mrb_init_ogss_color(mrb_state *mrb)
   mrb_define_method(mrb, color, "alpha=", color_set_alpha, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, color, "set", color_set, MRB_ARGS_OPT(4));
+
+  mrb_define_method(mrb, color, "==", color_equal, MRB_ARGS_REQ(1));
 }

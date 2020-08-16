@@ -164,6 +164,22 @@ mrb_rect_empty(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+mrb_rect_equal(mrb_state *mrb, mrb_value self)
+{
+  mrb_value other;
+  mrb_get_args(mrb, "o", &other);
+  if (mrb_rect_p(other))
+  {
+    rf_rec *a = mrb_get_rect(mrb, self);
+    rf_rec *b = mrb_get_rect(mrb, other);
+    mrb_bool cmp = (a->x == b->x) && (a->y == b->y) &&
+                   (a->width == b->width) && (a->height == b->height);
+    return mrb_bool_value(cmp);
+  }
+  return mrb_false_value();
+}
+
+static mrb_value
 mrb_rect_dump(mrb_state *mrb, mrb_value self)
 {
   rf_rec *rect = mrb_get_rect(mrb, self);

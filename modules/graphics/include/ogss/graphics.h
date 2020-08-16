@@ -43,6 +43,9 @@ struct rf_graphics_config
 rf_container *
 mrb_get_graphics_container(mrb_state *mrb);
 
+rf_sizef
+mrb_get_graphics_size(mrb_state *mrb);
+
 #ifdef __cplusplus
 }
 #endif

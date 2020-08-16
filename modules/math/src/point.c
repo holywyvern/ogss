@@ -137,6 +137,21 @@ mrb_point_load(mrb_state *mrb, mrb_value self)
   );
 }
 
+static mrb_value
+mrb_point_equal(mrb_state *mrb, mrb_value self)
+{
+  mrb_value other;
+  mrb_get_args(mrb, "o", &other);
+  if (mrb_point_p(other))
+  {
+    rf_vec2 *a = mrb_get_point(mrb, self);
+    rf_vec2 *b = mrb_get_point(mrb, other);
+    mrb_bool cmp = (a->x == b->x) && (a->y == b->y);
+    return mrb_bool_value(cmp);
+  }
+  return mrb_false_value();
+}
+
 void
 mrb_init_ogss_point(mrb_state *mrb)
 {
@@ -153,6 +168,8 @@ mrb_init_ogss_point(mrb_state *mrb)
 
   mrb_define_method(mrb, point, "x=", mrb_point_set_x, MRB_ARGS_REQ(1));
   mrb_define_method(mrb, point, "y=", mrb_point_set_y, MRB_ARGS_REQ(1));
+
+  mrb_define_method(mrb, point, "==", mrb_point_equal, MRB_ARGS_REQ(1));
 
   mrb_define_method(mrb, point, "_dump", mrb_point_dump, MRB_ARGS_OPT(1));
   mrb_define_class_method(mrb, point, "_load", mrb_point_load, MRB_ARGS_REQ(1));

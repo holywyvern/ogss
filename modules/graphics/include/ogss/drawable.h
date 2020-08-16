@@ -55,6 +55,7 @@ mrb_container_draw_children(rf_container *container);
 static inline void
 mrb_container_invalidate(mrb_state *mrb, rf_container *container)
 {
+  if (!container) return;
   container->dirty = TRUE;
 }
 

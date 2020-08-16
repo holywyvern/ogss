@@ -18,8 +18,19 @@
 
 static rf_vertex_buffer default_vertex_buffers[DEFAULT_VERTEX_BUFFERS_COUNT] = { 0 };
 
+static void
+config_free(mrb_state *mrb, void *p)
+{
+  if (p)
+  {
+    rf_graphics_config *config = p;
+    mrb_container_free(mrb, &(config->container));
+    mrb_free(mrb, p);
+  }
+}
+
 static const mrb_data_type config_type = {
-  "Graphics::Config", mrb_free
+  "Graphics::Config", config_free
 };
 
 static inline mrb_value
@@ -43,6 +54,14 @@ mrb_get_graphics_container(mrb_state *mrb)
 {
   mrb_value graphics = mrb_obj_value(mrb_class_get(mrb, "Graphics"));
   return &(get_config(mrb, graphics)->container);
+}
+
+rf_sizef
+mrb_get_graphics_size(mrb_state *mrb)
+{
+  mrb_value graphics = mrb_obj_value(mrb_class_get(mrb, "Graphics"));
+  rf_graphics_config *config = get_config(mrb, graphics);
+  return (rf_sizef){ (float)config->width, (float)config->height };
 }
 
 static mrb_value
