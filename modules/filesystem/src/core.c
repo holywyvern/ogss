@@ -28,6 +28,12 @@ struct mrb_file
   enum mrb_file_mode mode;
 };
 
+static struct ogss_file_alloc_ext
+{
+  mrb_state   *mrb;
+  const char **extensions;
+} file_allocator;
+
 static mrb_file *
 alloc_file(mrb_state *mrb, const char *name, PHYSFS_File *fp)
 {
@@ -189,6 +195,25 @@ mrb_file_exists(const char *filename)
   return PHYSFS_exists(filename);
 }
 
+mrb_bool
+mrb_file_exists_with_extensions(mrb_state *mrb, const char *filename, const char **extensions)
+{
+  mrb_value name = mrb_str_new_cstr(mrb, filename);
+  while (*extensions)
+  {
+    int arena = mrb_gc_arena_save(mrb);
+    mrb_value name_with_ext = mrb_str_cat_cstr(mrb, mrb_str_dup(mrb, name), *extensions);
+    if (mrb_file_exists(mrb_str_to_cstr(mrb, name_with_ext)))
+    {
+      mrb_gc_arena_restore(mrb, arena);
+      return TRUE;
+    }
+    ++extensions;
+    mrb_gc_arena_restore(mrb, arena);
+  }
+  return FALSE;
+}
+
 void
 mrb_file_seek(mrb_file *file, size_t position)
 {
@@ -215,6 +240,26 @@ rf_mrb_file_read(void* user_data, const char* filename, void* dst, int dst_size)
 {
   mrb_state *mrb = (mrb_state *)user_data;
   mrb_file *f = mrb_file_open_read(mrb, filename);
+  size_t read = mrb_file_read(f, dst_size, (char *)dst);
+  mrb_file_close(f);
+  return read > 0;
+}
+
+static int
+rf_mrb_file_size_with_ext(void* user_data, const char* filename)
+{
+  struct ogss_file_alloc_ext *u = (struct ogss_file_alloc_ext *)user_data;
+  mrb_file *f = mrb_file_open_read_with_extensions(u->mrb, filename, u->extensions);
+  int size = (int)mrb_file_length(f);
+  mrb_file_close(f);
+  return size;
+}
+
+static bool
+rf_mrb_file_read_with_ext(void* user_data, const char* filename, void* dst, int dst_size)
+{
+  struct ogss_file_alloc_ext *u = (struct ogss_file_alloc_ext *)user_data;
+  mrb_file *f = mrb_file_open_read_with_extensions(u->mrb, filename, u->extensions);
   size_t read = mrb_file_read(f, dst_size, (char *)dst);
   mrb_file_close(f);
   return read > 0;
@@ -501,7 +546,12 @@ mrb_puts(mrb_state *mrb, mrb_value self)
 rf_io_callbacks
 mrb_get_io_callbacks_for_extensions(mrb_state *mrb, const char **extensions)
 {
-  // TODO: Use extensions
+  rf_io_callbacks io;
+  file_allocator.extensions = extensions;
+  file_allocator.mrb = mrb;
+  io.file_size_proc = rf_mrb_file_size_with_ext;
+  io.read_file_proc = rf_mrb_file_read_with_ext;
+  io.user_data = &file_allocator;
   return mrb_get_io_callbacks(mrb);
 }
 

@@ -67,6 +67,9 @@ mrb_file_flush(mrb_file *file);
 mrb_bool
 mrb_file_exists(const char *filename);
 
+mrb_bool
+mrb_file_exists_with_extensions(mrb_state *mrb, const char *filename, const char **extensions);
+
 void
 mrb_file_seek(mrb_file *file, size_t position);
 

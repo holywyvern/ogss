@@ -43,9 +43,12 @@ font_initialize(mrb_state *mrb, mrb_value self)
   if (argc < 3) antialias = mrb_get_default_font_antialias(mrb);
   if (argc < 2) size = mrb_get_default_font_size(mrb);
   if (argc < 1) filename = mrb_get_default_font_name(mrb);
-  if (!mrb_file_exists(filename))
+  if (filename)
   {
-    mrb_raisef(mrb, E_LOAD_ERROR, "Cannot load font '%s'", filename);
+    if (!mrb_file_exists_with_extensions(mrb, filename, FONT_EXTENSIONS))
+    {
+      mrb_raisef(mrb, E_LOAD_ERROR, "Cannot load font '%s'", filename);
+    }
   }
   if (size < 1)
   {
@@ -54,11 +57,18 @@ font_initialize(mrb_state *mrb, mrb_value self)
   rf_allocator alloc = mrb_get_allocator(mrb);
   rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, FONT_EXTENSIONS);
   rf_font_antialias aa = antialias ? RF_FONT_ANTIALIAS : RF_FONT_NO_ANTIALIAS;
-  rf_font font = rf_load_ttf_font_from_file(filename, size, aa, alloc, alloc, io);
   rf_font *data = mrb_malloc(mrb, sizeof *data);
-  *data = font;
   DATA_PTR(self) = data;
-  mrb_iv_set(mrb, self, NAME, mrb_str_new_cstr(mrb, filename));
+  if (filename)
+  {
+    *data = rf_load_ttf_font_from_file(filename, (int)size, aa, alloc, alloc, io);
+    mrb_iv_set(mrb, self, NAME, mrb_str_new_cstr(mrb, filename));
+  }
+  else
+  {
+    *data = rf_get_default_font();
+    mrb_iv_set(mrb, self, NAME, mrb_nil_value());
+  }
   mrb_iv_set(mrb, self, SIZE, mrb_fixnum_value(size));
   return self;
 }
@@ -85,7 +95,7 @@ font_measure_text(mrb_state *mrb, mrb_value self)
   {
     height = font->base_size;
   }
-  rf_sizef size = rf_measure_text(*font, text, rf_font_height(*font, (float)height), 0);
+  rf_sizef size = rf_measure_text(*font, text, (float)rf_font_height(*font, (float)height), 0);
   return mrb_float_value(mrb, size.width);
 }
 
@@ -107,8 +117,12 @@ const char *
 mrb_get_default_font_name(mrb_state *mrb)
 {
   struct RClass *font = mrb_class_get(mrb, "Font");
-  mrb_value name = mrb_to_str(mrb, mrb_funcall(mrb, mrb_obj_value(font), "default_name", 0));
-  return mrb_str_to_cstr(mrb, name);
+  mrb_value name = mrb_funcall(mrb, mrb_obj_value(font), "default_name", 0);
+  if (!mrb_test(name))
+  {
+    return NULL;
+  }
+  return mrb_str_to_cstr(mrb, mrb_to_str(mrb, name));
 }
 
 mrb_int

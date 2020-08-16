@@ -4,6 +4,6 @@ class Font
   end
 end
 
-Font.default_name = 'OpenSans.ttf'
+Font.default_name = nil
 Font.default_size = 16
 Font.default_antialias = false
