@@ -366,7 +366,7 @@ const char *RUBY_FILE_EXTENSIONS[] = {
 };
 
 mrb_value
-mrb_file_detect_extension(mrb_state *mrb, const char *file, char **extensions)
+mrb_file_detect_extension(mrb_state *mrb, const char *file, const char **extensions)
 {
   mrb_value real_name = mrb_str_new_cstr(mrb, file);
   while (*extensions)

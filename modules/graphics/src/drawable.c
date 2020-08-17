@@ -96,7 +96,11 @@ mrb_container_update(mrb_state *mrb, rf_container *container)
   for (mrb_int i = 0; i < container->items_size; ++i)
   {
     rf_drawable *item = container->items[i];
-    container->items[i]->update(mrb, item);
+    rf_drawable_update_callback update = container->items[i]->update;
+    if (update)
+    {
+      update(mrb, item);
+    }
   }
 }
 
@@ -105,6 +109,10 @@ mrb_container_draw_children(rf_container *container)
 {
   for (mrb_int i = 0; i < container->items_size; ++i)
   {
-    container->items[i]->draw(container->items[i]);
+    rf_drawable_draw_callback draw = container->items[i]->draw;
+    if (draw)
+    {
+      draw(container->items[i]);
+    }
   }
 }

@@ -17,7 +17,7 @@
 #define OFFSET mrb_intern_lit(mrb, "#offset")
 
 static void
-viewport_free(mrb_state *mrb, void *p)
+free_viewport(mrb_state *mrb, void *p)
 {
   if (p)
   {
@@ -28,7 +28,7 @@ viewport_free(mrb_state *mrb, void *p)
   }
 }
 
-const struct mrb_data_type mrb_viewport_data_type = { "Viewport", viewport_free };
+const struct mrb_data_type mrb_viewport_data_type = { "Viewport", free_viewport };
 
 static void
 rf_viewport_update(mrb_state *mrb, rf_viewport *viewport)
@@ -65,11 +65,12 @@ rf_viewport_draw(mrb_state *mrb, rf_viewport *viewport)
 static mrb_value
 viewport_initialize(mrb_state *mrb, mrb_value self)
 {
-  int argc = mrb_get_argc(mrb);
+  mrb_int argc = mrb_get_argc(mrb);
   rf_viewport *data = mrb_malloc(mrb, sizeof *data);
   DATA_TYPE(self) = &mrb_viewport_data_type;
   DATA_PTR(self) = data;
   mrb_container_init(mrb, &(data->base));
+  data->visible = TRUE;
   data->base.base.update = (rf_drawable_update_callback)rf_viewport_update;
   data->base.base.draw   = (rf_drawable_draw_callback)rf_viewport_draw;
   rf_container *c = mrb_get_graphics_container(mrb);
@@ -79,7 +80,7 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
   data->offset = mrb_get_point(mrb, offset);
   mrb_iv_set(mrb, self, COLOR, color);
   mrb_iv_set(mrb, self, OFFSET, offset);
-  mrb_container_add_child(mrb, c, data);
+  mrb_container_add_child(mrb, c, &(data->base.base));
   switch (argc)
   {
     case 0:
@@ -87,7 +88,7 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
       rf_sizef size = mrb_get_graphics_size(mrb);
       mrb_value rect = mrb_rect_new(mrb, 0, 0, size.width, size.height);
       mrb_iv_set(mrb, self, RECT, rect);
-      data->render = rf_load_render_texture(size.width, size.height);
+      data->render = rf_load_render_texture((int)size.width, (int)size.height);
       data->rect = mrb_get_rect(mrb, rect);
       break;
     }
@@ -105,7 +106,7 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
       mrb_float x, y, w, h;
       mrb_get_args(mrb, "ffff", &x, &y, &w, &h);
       mrb_value rect = mrb_rect_new(mrb, x, y, w, h);
-      data->render = rf_load_render_texture(w, h);
+      data->render = rf_load_render_texture((int)w, (int)h);
       mrb_iv_set(mrb, self, RECT, rect);
       data->rect = mrb_get_rect(mrb, rect);
       break;
@@ -122,14 +123,14 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
 static mrb_value
 viewport_disposedQ(mrb_state *mrb, mrb_value self)
 {
-  return mrb_bool_value(DATA_PTR(self) ? 1 : 0);
+  return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
 }
 
 static mrb_value
 viewport_dispose(mrb_state *mrb, mrb_value self)
 {
   rf_viewport *view = mrb_get_viewport(mrb, self);
-  viewport_free(mrb, view);
+  free_viewport(mrb, view);
   DATA_PTR(self) = NULL;
   return mrb_nil_value();
 }
@@ -144,12 +145,6 @@ static mrb_value
 viewport_rect(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, RECT);
-}
-
-static mrb_value
-viewport_color(mrb_state *mrb, mrb_value self)
-{
-  return mrb_iv_get(mrb, self, COLOR);
 }
 
 static mrb_value
@@ -173,7 +168,7 @@ viewport_set_z(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "i", &value); 
   view->base.base.z = value;
   mrb_container_invalidate(mrb, view->base.base.container);
-  return mrb_bool_value(value);
+  return mrb_bool_value(value ? TRUE : FALSE);
 }
 
 static mrb_value

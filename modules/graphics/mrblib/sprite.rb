@@ -75,6 +75,5 @@ class Sprite
 
   alias mirror mirror_x
   alias mirror= mirror_x=
-  alias zoom scale
   alias zoom= scale=
 end

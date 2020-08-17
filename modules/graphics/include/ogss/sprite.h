@@ -18,14 +18,16 @@ typedef struct rf_sprite rf_sprite;
 
 struct rf_sprite
 {
-  rf_drawable base;
-  rf_bitmap  *bitmap;
-  rf_rec     *src_rect;
-  rf_vec2    *position;
-  rf_vec2    *anchor;
-  rf_vec2    *scale;
-  rf_color   *color;
-  float       rotation;
+  rf_drawable   base;
+  rf_bitmap    *bitmap;
+  rf_rec       *src_rect;
+  rf_vec2      *position;
+  rf_vec2      *anchor;
+  rf_vec2      *scale;
+  rf_color     *color;
+  mrb_bool      visible;
+  rf_blend_mode blend_mode;
+  float         rotation;
 };
 
 static inline rf_sprite *
@@ -33,6 +35,7 @@ mrb_get_sprite(mrb_state *mrb, mrb_value obj)
 {
   rf_sprite *sprite;
   Data_Get_Struct(mrb, obj, &mrb_sprite_data_type, sprite);
+  if (!sprite) mrb_raise(mrb, E_DISPOSED_ERROR, "Disposed Sprite");
   return sprite;
 }
 
