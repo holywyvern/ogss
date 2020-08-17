@@ -41,13 +41,16 @@ rf_viewport_update(mrb_state *mrb, rf_viewport *viewport)
     rf_unload_render_texture(viewport->render);
     viewport->render = rf_load_render_texture(w, h);
   }
+  rf_camera2d cam;
+  cam.offset = *(viewport->offset);
+  cam.rotation = 0;
+  cam.zoom = 1;
   mrb_container_update(mrb, &(viewport->base));
   rf_begin_render_to_texture(viewport->render);
     rf_clear(RF_BLANK);
-    rf_gfx_push_matrix();
-      rf_gfx_translatef(-viewport->offset->x, -viewport->offset->y, 0);
+    rf_begin_2d(cam);
       mrb_container_draw_children(&(viewport->base));
-    rf_gfx_pop_matrix();
+    rf_end_2d();
   rf_end_render_to_texture();
 }
 
@@ -59,7 +62,41 @@ rf_viewport_draw(rf_viewport *viewport)
   int w = (int)viewport->rect->width;
   int h = (int)viewport->rect->height;
   if (!w || !h || !viewport->visible) return;
-  rf_draw_texture(viewport->render.texture, x, y, *(viewport->color));
+
+  float corners[4][2] = {
+    // Bottom-left corner for texture and quad
+    { 0, 1 },
+    // Bottom-right corner for texture and quad
+    { 0, 0 },
+    // Top-right corner for texture and quad
+    { 1, 0 },
+    // Top-left corner for texture and quad
+    { 1, 1 }          
+  };
+  rf_color color = *(viewport->color);
+
+  rf_gfx_enable_texture(viewport->render.texture.id);
+  rf_gfx_push_matrix();
+    rf_begin_blend_mode(RF_BLEND_ALPHA);
+    rf_gfx_translatef(x, y, 0);
+    rf_gfx_begin(RF_QUADS);
+      rf_gfx_color4ub(color.r, color.g, color.b, color.a);
+      // Bottom-left corner for texture and quad
+      rf_gfx_tex_coord2f(corners[0][0], corners[0][1]);
+      rf_gfx_vertex2f(0.0f, 0.0f);
+      // Bottom-right corner for texture and quad
+      rf_gfx_tex_coord2f(corners[1][0], corners[1][1]);
+      rf_gfx_vertex2f(0.0f, h);
+      // Top-right corner for texture and quad
+      rf_gfx_tex_coord2f(corners[2][0], corners[2][1]);
+      rf_gfx_vertex2f(w, h);
+      // Top-left corner for texture and quad
+      rf_gfx_tex_coord2f(corners[3][0], corners[3][1]);
+      rf_gfx_vertex2f(w, 0.0f);
+    rf_gfx_end();
+    rf_end_blend_mode();
+  rf_gfx_pop_matrix();
+  rf_gfx_disable_texture();
 }
 
 static mrb_value
