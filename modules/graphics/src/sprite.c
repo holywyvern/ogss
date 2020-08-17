@@ -201,9 +201,12 @@ sprite_set_z(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_sprite *sprite = mrb_get_sprite(mrb, self);
-  mrb_get_args(mrb, "i", &value); 
-  sprite->base.z = value;
-  mrb_container_invalidate(mrb, sprite->base.container);
+  mrb_get_args(mrb, "i", &value);
+  if (sprite->base.z != value)
+  {
+    sprite->base.z = value;
+    mrb_container_invalidate(mrb, sprite->base.container);
+  }
   return mrb_fixnum_value(value);
 }
 

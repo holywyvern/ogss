@@ -202,9 +202,12 @@ viewport_set_z(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_viewport *view = mrb_get_viewport(mrb, self);
-  mrb_get_args(mrb, "i", &value); 
-  view->base.base.z = value;
-  mrb_container_invalidate(mrb, view->base.base.container);
+  mrb_get_args(mrb, "i", &value);
+  if (view->base.base.z != value)
+  {
+    view->base.base.z = value;
+    mrb_container_invalidate(mrb, view->base.base.container);
+  }
   return mrb_bool_value(value ? TRUE : FALSE);
 }
 
