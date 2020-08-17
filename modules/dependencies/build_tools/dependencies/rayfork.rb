@@ -1,15 +1,6 @@
 class Rayfork < Dependency
-  def configure
-    super
-
-    File.open(cmake_file, 'a') do |f|
-      f.puts ''
-      f.puts 'add_compile_definitions(RAYFORK_ENABLE_AUDIO)'
-    end
-  end
-
-  def cmake_file
-    @cmake_file ||= File.join(dir, 'CMakeLists.txt')
+  def cmake_configure_flags
+    '-DRAYFORK_ENABLE_AUDIO=TRUE'
   end
 
   def libraries

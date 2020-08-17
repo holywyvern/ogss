@@ -109,8 +109,7 @@ rf_draw_sprite(rf_sprite *sprite)
     rf_gfx_rotatef(sprite->rotation, 0, 0, 1);
     rf_gfx_translatef(-ox, -oy, 0);
     rf_gfx_begin(RF_QUADS);
-      rf_gfx_color4f(color.r, color.g, color.b, color.a);
-      rf_gfx_normal3f(0.0f, 0.0f, 1.0f);
+      rf_gfx_color4ub(color.r, color.g, color.b, color.a);
       // Bottom-left corner for texture and quad
       rf_gfx_tex_coord2f(corners[0][0], corners[0][1]);
       rf_gfx_vertex2f(0.0f, 0.0f);

@@ -8,15 +8,12 @@
 
 #include <rayfork.h>
 
+#include <ogss/alloc.h>
 #include <ogss/drawable.h>
 #include <ogss/graphics.h>
 
 #define CONFIG mrb_intern_lit(mrb, "#config")
 #define TITLE mrb_intern_lit(mrb, "#title")
-
-#define DEFAULT_VERTEX_BUFFERS_COUNT 1024
-
-static rf_vertex_buffer default_vertex_buffers[DEFAULT_VERTEX_BUFFERS_COUNT] = { 0 };
 
 static void
 config_free(mrb_state *mrb, void *p)
@@ -171,7 +168,6 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
   mrb_graphics_frame_reset(mrb, self);
   rf_graphics_config *config = get_config(mrb, self);
-  rf_set_active_render_batch(&(config->render_batch));
   rf_begin();
   mrb_container_update(mrb, &(config->container));
   rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
@@ -279,14 +275,11 @@ mrb_config_initialize(mrb_state *mrb, mrb_value self)
   config->brightness = 255;
   config->is_open = 0;
   config->context = (rf_context){0};
-  config->render_batch = (rf_render_batch){0};
   config->is_frozen = 0;
   config->data = NULL;
   mrb_container_init(mrb, &(config->container));
   DATA_TYPE(self) = &config_type;
   DATA_PTR(self) = config;
-  config->render_batch.vertex_buffers = &default_vertex_buffers;
-  config->render_batch.vertex_buffers_count = DEFAULT_VERTEX_BUFFERS_COUNT;
   mrb_iv_set(mrb, self, TITLE, mrb_str_new_cstr(mrb, "OGSS Game"));
   return mrb_nil_value();
 }
@@ -321,6 +314,9 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   *procs = RF_DEFAULT_OPENGL_PROCS;
 #endif
   rf_init(&(config->context), (int)config->width, (int)config->height, RF_DEFAULT_LOGGER, config->data);
+  rf_allocator alloc = mrb_get_allocator(mrb);
+  config->render_batch = rf_create_default_render_batch(alloc);
+  rf_set_active_render_batch(&(config->render_batch));
   config->is_open = 1;
   mrb_bool error;
   mrb_value ret = mrb_protect(mrb, call_block, block, &error);
@@ -331,6 +327,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   config->window = NULL;
   glfwTerminate();
 #endif
+  rf_unload_render_batch(config->render_batch, alloc);
   return mrb_nil_value();
 }
 
