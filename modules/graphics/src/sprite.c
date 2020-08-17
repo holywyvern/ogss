@@ -68,7 +68,7 @@ rf_draw_sprite(rf_sprite *sprite)
   float width  = (float)texture.width;
   float height = (float)texture.height;
   rf_rec dst = (rf_rec){
-    sprite->position->x, sprite->position->y, width * sx, height * sy
+    sprite->position->x, sprite->position->y, src.width * sx, src.height * sy
   };
 
   float corners[4][2] = {
