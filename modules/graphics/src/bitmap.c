@@ -33,7 +33,7 @@ bitmap_free(mrb_state *mrb, void *ptr)
   }
 }
 
-const struct mrb_data_type mrb_bitmap_type = {
+const struct mrb_data_type mrb_bitmap_data_type = {
   "Bitmap", bitmap_free
 };
 
@@ -75,6 +75,8 @@ bitmap_initialize(mrb_state *mrb, mrb_value self)
   bmp->image = img;
   bmp->texture = rf_load_texture_from_image(img);
   bmp->dirty = FALSE;
+  DATA_TYPE(self) = &mrb_bitmap_data_type;
+  DATA_PTR(self) = bmp;
   return mrb_nil_value();
 }
 
@@ -82,7 +84,7 @@ static mrb_value
 bitmap_initialize_copy(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *original;
-  mrb_get_args(mrb, "d", &original, &mrb_bitmap_type);
+  mrb_get_args(mrb, "d", &original, &mrb_bitmap_data_type);
   rf_image img = rf_image_copy(original->image, mrb_get_allocator(mrb));
   rf_bitmap *bmp = mrb_malloc(mrb, sizeof *bmp);
   bmp->image = img;
@@ -256,9 +258,9 @@ mrb_init_ogss_bitmap(mrb_state *mrb)
   mrb_define_method(mrb, bitmap, "initialize", bitmap_initialize, MRB_ARGS_OPT(2));
   mrb_define_method(mrb, bitmap, "initialize_copy", bitmap_initialize_copy, MRB_ARGS_REQ(1));
 
-  mrb_define_class_method(mrb, bitmap, "rect", bitmap_rect, MRB_ARGS_NONE());
-  mrb_define_class_method(mrb, bitmap, "width", bitmap_get_width, MRB_ARGS_NONE());
-  mrb_define_class_method(mrb, bitmap, "height", bitmap_get_height, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "rect", bitmap_rect, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "width", bitmap_get_width, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "height", bitmap_get_height, MRB_ARGS_NONE());
 
   mrb_define_class_method(mrb, bitmap, "cellular", bitmap_s_cellular, MRB_ARGS_ANY());
   mrb_define_class_method(mrb, bitmap, "checked", bitmap_s_checked, MRB_ARGS_ANY());

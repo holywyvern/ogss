@@ -52,14 +52,14 @@ get_config(mrb_state *mrb, mrb_value self)
 rf_container *
 mrb_get_graphics_container(mrb_state *mrb)
 {
-  mrb_value graphics = mrb_obj_value(mrb_class_get(mrb, "Graphics"));
+  mrb_value graphics = mrb_obj_value(mrb_module_get(mrb, "Graphics"));
   return &(get_config(mrb, graphics)->container);
 }
 
 rf_sizef
 mrb_get_graphics_size(mrb_state *mrb)
 {
-  mrb_value graphics = mrb_obj_value(mrb_class_get(mrb, "Graphics"));
+  mrb_value graphics = mrb_obj_value(mrb_module_get(mrb, "Graphics"));
   rf_graphics_config *config = get_config(mrb, graphics);
   return (rf_sizef){ (float)config->width, (float)config->height };
 }

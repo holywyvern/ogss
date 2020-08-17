@@ -13,7 +13,7 @@ extern "C" {
 
 typedef struct rf_bitmap rf_bitmap;
 
-extern const struct mrb_data_type mrb_bitmap_type;
+extern const struct mrb_data_type mrb_bitmap_data_type;
 
 struct rf_bitmap
 {
@@ -26,7 +26,7 @@ static inline rf_bitmap *
 mrb_get_bitmap(mrb_state *mrb, mrb_value obj)
 {
   rf_bitmap *bmp;
-  Data_Get_Struct(mrb, obj, &mrb_bitmap_type, bmp);
+  Data_Get_Struct(mrb, obj, &mrb_bitmap_data_type, bmp);
   if (!bmp)
   {
     mrb_raise(mrb, E_DISPOSED_ERROR, "Disposed bitmap");
@@ -48,7 +48,7 @@ mrb_refresh_bitmap(rf_bitmap *bmp)
 static inline mrb_bool
 mrb_bitmap_p(mrb_value obj)
 {
-  return mrb_data_p(obj) && DATA_TYPE(obj) == &mrb_bitmap_type;
+  return mrb_data_p(obj) && DATA_TYPE(obj) == &mrb_bitmap_data_type;
 }
 
 #ifdef __cplusplus

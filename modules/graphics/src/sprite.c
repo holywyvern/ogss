@@ -148,16 +148,19 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   mrb_value anchor = mrb_point_new(mrb, 0, 0);
   mrb_value scale = mrb_point_new(mrb, 1 , 1);
   mrb_value color = mrb_color_white(mrb);
+  mrb_value src_rect = mrb_rect_new(mrb, 0, 0, 0, 0);
   sprite->position = mrb_get_point(mrb, position);
   sprite->anchor = mrb_get_point(mrb, anchor);
   sprite->scale = mrb_get_point(mrb, scale);
   sprite->color = mrb_get_color(mrb, color);
+  sprite->src_rect = mrb_get_rect(mrb, src_rect);
   sprite->visible = TRUE;
   mrb_iv_set(mrb, self, POSITION, position);
   mrb_iv_set(mrb, self, ANCHOR, anchor);
   mrb_iv_set(mrb, self, SCALE, scale);
   mrb_iv_set(mrb, self, COLOR, color);
   mrb_iv_set(mrb, self, BITMAP, mrb_nil_value());
+  mrb_iv_set(mrb, self, SRC_RECT, src_rect);
   if (argc)
   {
     parent = &(viewport->base);
@@ -272,7 +275,7 @@ sprite_set_bitmap(mrb_state *mrb, mrb_value self)
   }
   else
   {
-    if (!mrb_bitmap_p(value)) mrb_raise(mrb, E_ARGUMENT_ERROR, "Value is not a Bitmap");
+    if (!mrb_bitmap_p(value)) mrb_raise(mrb, E_ARGUMENT_ERROR, "value is not a Bitmap");
     sprite->bitmap = mrb_get_bitmap(mrb, value);
     mrb_value src_rect = mrb_funcall(mrb, value, "rect", 0);
     mrb_funcall(mrb, mrb_iv_get(mrb, self, SRC_RECT), "set", 1, src_rect);

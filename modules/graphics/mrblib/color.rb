@@ -21,4 +21,8 @@ class Color
     self.blue = gray
     self
   end
+
+  def inspect
+    "Color(#{red}, #{green}, #{blue}, #{alpha})"
+  end
 end
