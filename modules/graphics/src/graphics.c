@@ -290,6 +290,28 @@ call_block(mrb_state *mrb, mrb_value block)
   return mrb_funcall(mrb, block, "call", 0);
 }
 
+#ifdef OGSS_PLATFORM_GLFW
+void center_window(GLFWwindow *window, GLFWmonitor *monitor)
+{
+    if (!monitor)
+        return;
+
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+    if (!mode)
+        return;
+
+    int monitorX, monitorY;
+    glfwGetMonitorPos(monitor, &monitorX, &monitorY);
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+    glfwSetWindowPos(window,
+                     monitorX + (mode->width - windowWidth) / 2,
+                     monitorY + (mode->height - windowHeight) / 2);
+}
+#endif
+
 static mrb_value
 mrb_start_game(mrb_state *mrb, mrb_value self)
 {
@@ -300,8 +322,10 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   rf_graphics_config *config = get_config(mrb, mrb_obj_value(graphics));
 #ifdef OGSS_PLATFORM_GLFW
   if (!glfwInit()) mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to create game screen");
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   title = mrb_str_to_cstr(mrb, config->title);
   config->window = glfwCreateWindow((int)config->width, (int)config->height, title, NULL, NULL);
+  center_window(config->window, glfwGetPrimaryMonitor());
   if (!config->window) mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to create game screen");
   glfwMakeContextCurrent(config->window);
   glfwSwapInterval(1);
