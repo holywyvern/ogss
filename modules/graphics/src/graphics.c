@@ -14,6 +14,7 @@
 
 #define CONFIG mrb_intern_lit(mrb, "#config")
 #define TITLE mrb_intern_lit(mrb, "#title")
+#define LAST_UPDATE mrb_intern_lit(mrb, "#last_update")
 
 static void
 config_free(mrb_state *mrb, void *p)
@@ -168,6 +169,10 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
   mrb_graphics_frame_reset(mrb, self);
   rf_graphics_config *config = get_config(mrb, self);
+  mrb_value last_update = mrb_iv_get(mrb, self, LAST_UPDATE);
+  mrb_value now = mrb_funcall(mrb, mrb_obj_value(mrb_class_get(mrb, "Time")), "now", 0);
+  config->dt = mrb_float(mrb_Float(mrb, mrb_funcall(mrb, now, "-", 1, last_update)));
+  mrb_iv_set(mrb, self, LAST_UPDATE, now);
   rf_begin();
   mrb_container_update(mrb, &(config->container));
   rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
@@ -231,6 +236,14 @@ mrb_graphics_get_brightness(mrb_state *mrb, mrb_value self)
   rf_graphics_config *config = get_config(mrb, self);
   return mrb_fixnum_value(config->brightness);
 }
+
+static mrb_value
+mrb_graphics_get_dt(mrb_state *mrb, mrb_value self)
+{
+  rf_graphics_config *config = get_config(mrb, self);
+  return mrb_float_value(mrb, config->dt);
+}
+
 
 static mrb_value
 mrb_graphics_set_frame_rate(mrb_state *mrb, mrb_value self)
@@ -342,6 +355,9 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   config->render_batch = rf_create_default_render_batch(alloc);
   rf_set_active_render_batch(&(config->render_batch));
   config->is_open = 1;
+  mrb_value tc = mrb_obj_value(mrb_class_get(mrb, "Time"));
+  mrb_iv_set(mrb, mrb_obj_value(graphics), LAST_UPDATE, mrb_funcall(mrb, tc, "now", 0));
+  config->dt = 0;
   mrb_bool error;
   mrb_value ret = mrb_protect(mrb, call_block, block, &error);
   if (error) mrb_exc_raise(mrb, ret);
@@ -371,6 +387,8 @@ mrb_init_ogss_graphics(mrb_state *mrb)
   mrb_define_module_function(mrb, graphics, "frame_rate", mrb_graphics_get_frame_rate, MRB_ARGS_NONE());
   mrb_define_module_function(mrb, graphics, "frame_count", mrb_graphics_get_frame_count, MRB_ARGS_NONE());
   mrb_define_module_function(mrb, graphics, "brightness", mrb_graphics_get_brightness, MRB_ARGS_NONE());
+  mrb_define_module_function(mrb, graphics, "delta_time", mrb_graphics_get_dt, MRB_ARGS_NONE());
+  mrb_define_module_function(mrb, graphics, "dt", mrb_graphics_get_dt, MRB_ARGS_NONE());
 
   mrb_define_module_function(mrb, graphics, "frame_rate=", mrb_graphics_set_frame_rate, MRB_ARGS_REQ(1));
   mrb_define_module_function(mrb, graphics, "frame_count=", mrb_graphics_set_frame_count, MRB_ARGS_REQ(1));

@@ -3,6 +3,7 @@
 
 #include <mruby.h>
 #include <rayfork.h>
+#include <time.h>
 
 #include <ogss/drawable.h>
 
@@ -38,6 +39,7 @@ struct rf_graphics_config
   rf_texture2d               frozen_img;
   rf_render_texture2d        render_texture;
   rf_container               container;
+  mrb_float                  dt;
 };
 
 rf_container *

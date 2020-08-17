@@ -6,4 +6,6 @@ MRuby::Gem::Specification.new('ogss-graphics') do |spec|
   spec.add_dependency 'ogss-filesystem'
   spec.add_dependency 'ogss-core'
   spec.add_dependency 'ogss-math'
+
+  spec.add_dependency 'mruby-time'
 end
