@@ -9,6 +9,8 @@
 #include <mruby/variable.h>
 #include <mruby/error.h>
 
+#include <ogss/file.h>
+
 int
 main(int argc, char *argv[])
 {
@@ -22,6 +24,7 @@ main(int argc, char *argv[])
     mrb_ary_push(mrb, ARGV, mrb_str_new_cstr(mrb, argv[i]));
   }
   mrb_define_global_const(mrb, "ARGV", ARGV);
+  mrb_setup_filesystem(mrb);
   mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "require", 1, mrb_str_new_cstr(mrb, "scripts/main"));
   return_value = EXIT_SUCCESS;
   if (mrb->exc) {
@@ -29,6 +32,7 @@ main(int argc, char *argv[])
     mrb_print_error(mrb);
     return_value = EXIT_FAILURE;
   }
+  mrb_close_filesystem(mrb);
   mrb_close(mrb);
 
   return return_value;
