@@ -7,7 +7,12 @@ sort_by_z(const void *a, const void *b)
 {
   const rf_drawable *da = *((const rf_drawable **)a);
   const rf_drawable *db = *((const rf_drawable **)b);
-  return (int)(da->z - db->z);
+  int ret = (int)(da->z - db->z);
+  if (!ret)
+  {
+    ret = (int)(da->id - db->id);
+  }
+  return ret;
 }
 
 static mrb_int
@@ -65,6 +70,7 @@ mrb_container_add_child(mrb_state *mrb, rf_container *parent, rf_drawable *child
     parent->items[parent->items_size] = child;
     parent->items_size = next_size;
     child->container = parent;
+    child->id = next_size;
     parent->dirty = TRUE;
   }
 }

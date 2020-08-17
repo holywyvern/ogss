@@ -23,6 +23,7 @@ struct rf_drawable
   rf_drawable_update_callback   update;
   rf_drawable_draw_callback     draw;
   mrb_int                       z;
+  mrb_int                       id;
 };
 
 struct rf_container
