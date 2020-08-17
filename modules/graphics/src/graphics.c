@@ -169,6 +169,7 @@ mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
+  mrb_graphics_frame_reset(mrb, self);
   rf_graphics_config *config = get_config(mrb, self);
   rf_set_active_render_batch(&(config->render_batch));
   rf_begin();
@@ -186,8 +187,7 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
     rf_draw_texture(config->frozen_img, 0, 0, RF_RAYWHITE);
   }
   rf_end();
-  config->frame_count += 1;
-  mrb_graphics_frame_reset(mrb, self);
+  config->frame_count += 1;  
   return mrb_nil_value();
 }
 

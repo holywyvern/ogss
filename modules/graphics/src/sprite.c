@@ -45,7 +45,7 @@ swap_point(float *p1, float *p2)
 }
 
 static void
-rf_draw_sprite(mrb_state *mrb, rf_sprite *sprite)
+rf_draw_sprite(rf_sprite *sprite)
 {
   if (!sprite->visible) return;
   if (!sprite->bitmap) return;
@@ -53,6 +53,8 @@ rf_draw_sprite(mrb_state *mrb, rf_sprite *sprite)
   mrb_refresh_bitmap(sprite->bitmap);
   rf_texture2d texture = sprite->bitmap->texture;
   if (texture.id <= 0) return;
+  if (!texture.valid) return;
+
   mrb_bool flip_x = FALSE, flip_y = FALSE;
 
   float sx = sprite->scale->x, sy = sprite->scale->y;
@@ -308,6 +310,12 @@ sprite_get_scale(mrb_state *mrb, mrb_value self)
   return mrb_iv_get(mrb, self, SCALE);
 }
 
+static mrb_value
+sprite_get_color(mrb_state *mrb, mrb_value self)
+{
+  return mrb_iv_get(mrb, self, COLOR);
+}
+
 void
 mrb_init_ogss_sprite(mrb_state *mrb)
 {
@@ -333,6 +341,7 @@ mrb_init_ogss_sprite(mrb_state *mrb)
   mrb_define_method(mrb, sprite, "anchor", sprite_get_anchor, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "scale", sprite_get_scale, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "zoom", sprite_get_scale, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "color", sprite_get_color, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, sprite, "blend_mode", sprite_get_blend_mode, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "blend_mode=", sprite_set_blend_mode, MRB_ARGS_REQ(1));

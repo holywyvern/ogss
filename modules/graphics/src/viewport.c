@@ -52,7 +52,7 @@ rf_viewport_update(mrb_state *mrb, rf_viewport *viewport)
 }
 
 static void
-rf_viewport_draw(mrb_state *mrb, rf_viewport *viewport)
+rf_viewport_draw(rf_viewport *viewport)
 {
   int x = (int)viewport->rect->x;
   int y = (int)viewport->rect->y;
