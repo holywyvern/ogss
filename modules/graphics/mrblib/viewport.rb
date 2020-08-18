@@ -1,5 +1,5 @@
 class Viewport
-  delegate :x, :y, :width, :height, :set, to: :rect
+  delegate :x, :x=, :y, :y=, :width, :width=, :height, :height=, :set, to: :rect
 
   def rect=(value)
     if value.is_a?(Array)

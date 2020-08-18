@@ -15,7 +15,7 @@ typedef struct rf_drawable rf_drawable;
 typedef struct rf_container rf_container;
 
 typedef void (*rf_drawable_update_callback)(mrb_state *mrb, rf_drawable *obj);
-typedef void (*rf_drawable_draw_callback)(rf_drawable *obj);
+typedef void (*rf_drawable_draw_callback)(mrb_state *mrb, rf_drawable *obj);
 
 struct rf_drawable
 {
@@ -51,7 +51,7 @@ void
 mrb_container_update(mrb_state *mrb, rf_container *parent);
 
 void
-mrb_container_draw_children(rf_container *container);
+mrb_container_draw_children(mrb_state *mrb, rf_container *container);
 
 static inline void
 mrb_container_invalidate(mrb_state *mrb, rf_container *container)

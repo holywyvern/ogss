@@ -20,6 +20,7 @@
 #define ANCHOR mrb_intern_cstr(mrb, "#anchor")
 #define SCALE mrb_intern_cstr(mrb, "#scale")
 #define COLOR mrb_intern_cstr(mrb, "#color")
+#define VIEWPORT mrb_intern_cstr(mrb, "#viewport")
 
 static void
 free_sprite(mrb_state *mrb, void *p)
@@ -45,7 +46,7 @@ swap_point(float *p1, float *p2)
 }
 
 static void
-rf_draw_sprite(rf_sprite *sprite)
+rf_draw_sprite(mrb_state *mrb, rf_sprite *sprite)
 {
   if (!sprite->visible) return;
   if (!sprite->bitmap) return;
@@ -131,11 +132,9 @@ rf_draw_sprite(rf_sprite *sprite)
 static mrb_value
 sprite_initialize(mrb_state *mrb, mrb_value self)
 {
-  rf_viewport *viewport;
   DATA_TYPE(self) = &mrb_sprite_data_type;
   rf_sprite *sprite = mrb_malloc(mrb, sizeof *sprite);
   DATA_PTR(self) = sprite;
-  mrb_int argc = mrb_get_args(mrb, "|d", &viewport, &mrb_viewport_data_type);
   rf_container *parent;
   sprite->base.container = NULL;
   sprite->base.z = 0;
@@ -162,13 +161,19 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   mrb_iv_set(mrb, self, COLOR, color);
   mrb_iv_set(mrb, self, BITMAP, mrb_nil_value());
   mrb_iv_set(mrb, self, SRC_RECT, src_rect);
-  if (argc)
+  mrb_value parent_value = mrb_nil_value();
+  mrb_int argc = mrb_get_args(mrb, "|o", &parent_value);
+  if (argc && !mrb_nil_p(parent_value))
   {
+    if (!mrb_viewport_p(parent_value)) mrb_raise(mrb, E_ARGUMENT_ERROR, "parent must be a Viewport");
+    rf_viewport *viewport = mrb_get_viewport(mrb, parent_value);
     parent = &(viewport->base);
+    mrb_iv_set(mrb, self, VIEWPORT, parent_value);
   }
   else
   {
     parent = mrb_get_graphics_container(mrb);
+    mrb_iv_set(mrb, self, VIEWPORT, mrb_nil_value());
   }
   mrb_container_add_child(mrb, parent, &(sprite->base));
   return self;
@@ -262,6 +267,34 @@ sprite_set_blend_mode(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+sprite_get_viewport(mrb_state *mrb, mrb_value self)
+{
+  return mrb_iv_get(mrb, self, VIEWPORT);
+}
+
+static mrb_value
+sprite_set_viewport(mrb_state *mrb, mrb_value self)
+{
+  mrb_value parent_value;
+  mrb_get_args(mrb, "o", &parent_value);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  if (mrb_nil_p(parent_value))
+  {
+    mrb_container_add_child(mrb, mrb_get_graphics_container(mrb), &(sprite->base));
+    mrb_iv_set(mrb, self, VIEWPORT, parent_value);
+    return parent_value;
+  }
+  if (!mrb_viewport_p(parent_value))
+  {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "value is not a Viewport");
+  }
+  rf_viewport *view = mrb_get_viewport(mrb, parent_value);
+  mrb_container_add_child(mrb, &(view->base), &(sprite->base));
+  mrb_iv_set(mrb, self, VIEWPORT, parent_value);
+  return parent_value;
+}
+
+static mrb_value
 sprite_get_bitmap(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, BITMAP);
@@ -331,6 +364,9 @@ mrb_init_ogss_sprite(mrb_state *mrb)
 
   mrb_define_method(mrb, sprite, "z", sprite_get_z, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "z=", sprite_set_z, MRB_ARGS_REQ(1));
+
+  mrb_define_method(mrb, sprite, "viewport", sprite_get_viewport, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "viewport=", sprite_set_viewport, MRB_ARGS_REQ(1));
 
   mrb_define_method(mrb, sprite, "bitmap", sprite_get_bitmap, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "bitmap=", sprite_set_bitmap, MRB_ARGS_REQ(1));

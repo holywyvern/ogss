@@ -49,13 +49,13 @@ rf_viewport_update(mrb_state *mrb, rf_viewport *viewport)
   rf_begin_render_to_texture(viewport->render);
     rf_clear(RF_BLANK);
     rf_begin_2d(cam);
-      mrb_container_draw_children(&(viewport->base));
+      mrb_container_draw_children(mrb, &(viewport->base));
     rf_end_2d();
   rf_end_render_to_texture();
 }
 
 static void
-rf_viewport_draw(rf_viewport *viewport)
+rf_viewport_draw(mrb_state *mrb, rf_viewport *viewport)
 {
   int x = (int)viewport->rect->x;
   int y = (int)viewport->rect->y;

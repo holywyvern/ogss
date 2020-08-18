@@ -181,7 +181,7 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
     rf_begin_render_to_texture(config->render_texture);
   }
   rf_camera2d cam = {0};
-  mrb_container_draw_children(&(config->container));
+  mrb_container_draw_children(mrb, &(config->container));
   if (config->is_frozen)
   {
     rf_end_render_to_texture();

@@ -32,7 +32,6 @@ set_color(mrb_state *mrb, mrb_int argc, rf_color *color)
       color->r = (unsigned char)clamp(r);
       color->g = (unsigned char)clamp(g);
       color->b = (unsigned char)clamp(b);
-      color->a = (unsigned char)255;
       break;
     }
     case 4:
@@ -56,6 +55,7 @@ color_initialize(mrb_state *mrb, mrb_value self)
   {
     case 0: case 1: case 3: case 4: {
       rf_color *color = mrb_malloc(mrb, sizeof *color);
+      color->a = 255;
       DATA_TYPE(self) = &mrb_color_data_type;
       DATA_PTR(self) = color;
       set_color(mrb, argc, color);
@@ -189,14 +189,14 @@ mrb_init_ogss_color(mrb_state *mrb)
   mrb_define_method(mrb, color, "blue", color_get_blue, MRB_ARGS_NONE());
   mrb_define_method(mrb, color, "alpha", color_get_alpha, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, color, "r=", color_set_red, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "g=", color_set_green, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "b=", color_set_blue, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "a=", color_set_alpha, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "red=", color_set_red, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "green=", color_set_green, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "blue=", color_set_blue, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "alpha=", color_set_alpha, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "r=", color_set_red, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "g=", color_set_green, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "b=", color_set_blue, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "a=", color_set_alpha, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "red=", color_set_red, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "green=", color_set_green, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "blue=", color_set_blue, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "alpha=", color_set_alpha, MRB_ARGS_REQ(1));
 
   mrb_define_method(mrb, color, "set", color_set, MRB_ARGS_OPT(4));
 
