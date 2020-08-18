@@ -18,10 +18,14 @@ typedef struct rf_viewport rf_viewport;
 struct rf_viewport
 {
   rf_container         base;
+  rf_color             original_flash_color;
+  rf_color             flash_color;  
   rf_color            *color;
   rf_rec              *rect;
   rf_vec2             *offset;
   rf_render_texture2d  render;
+  mrb_float            total_flash_time;
+  mrb_float            flash_time;
   mrb_bool             visible;
 };
 

@@ -35,6 +35,71 @@ free_sprite(mrb_state *mrb, void *p)
 
 const struct mrb_data_type mrb_sprite_data_type = { "Sprite", free_sprite };
 
+static rf_shader sprite_shader;
+static mrb_bool shader_ready = FALSE;
+
+static struct
+{
+  int flash_color;
+} shader_locations;
+
+static const char * sprite_fshader =
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+"#version 100\n"
+"precision mediump float;"
+"varying vec2 frag_tex_coord;"
+"varying vec4 frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+"#version 330\n"
+"precision mediump float;"
+"in vec2 frag_tex_coord;"
+"in vec4 frag_color;"
+"out vec4 final_color;"
+#endif
+"uniform sampler2D texture0;"
+"uniform vec4 col_diffuse;"
+"uniform vec4 flash_color;"
+"void main()"
+"{"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+"    vec4 texel_color = texture2D(texture0, frag_tex_coord);" // NOTE: texture2D() is deprecated on OpenGL 3.3 and ES 3.0
+"    float a = 1 - flash_color.a;"
+"    texel_color.r = texel_color.r * a + flash_color.r * flash_color.a;"
+"    texel_color.g = texel_color.g * a + flash_color.g * flash_color.a;"
+"    texel_color.b = texel_color.b * a + flash_color.b * flash_color.a;"
+"    frag_color = texel_color*col_diffuse*frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+"    vec4 texel_color = texture(texture0, frag_tex_coord);"
+"    float a = 1 - flash_color.a;"
+"    texel_color.r = texel_color.r * a + flash_color.r * flash_color.a;"
+"    texel_color.g = texel_color.g * a + flash_color.g * flash_color.a;"
+"    texel_color.b = texel_color.b * a + flash_color.b * flash_color.a;"
+"    final_color = texel_color*col_diffuse*frag_color;"
+#endif
+"}"
+;
+
+static void
+init_shader(mrb_state *mrb)
+{
+  rf_get_default_shader();
+  sprite_shader = rf_gfx_load_shader(NULL, sprite_fshader);
+  shader_locations.flash_color = rf_gfx_get_shader_location(sprite_shader, "flash_color");
+  shader_ready = TRUE;
+}
+
+static inline void
+bind_shader(rf_sprite *sprite)
+{
+  float rgba[] = {
+    (float)sprite->flash_color.r / 255.0f, 
+    (float)sprite->flash_color.g / 255.0f, 
+    (float)sprite->flash_color.b / 255.0f, 
+    (float)sprite->flash_color.a / 255.0f,
+  };
+  rf_gfx_set_shader_value(sprite_shader, shader_locations.flash_color, rgba, RF_UNIFORM_VEC4);
+}
+
 static inline void
 swap_point(float *p1, float *p2)
 {
@@ -109,6 +174,8 @@ rf_draw_sprite(mrb_state *mrb, rf_sprite *sprite)
     rf_gfx_translatef(dst.x, dst.y, 0);
     rf_gfx_rotatef(sprite->rotation, 0, 0, 1);
     rf_gfx_translatef(-ox, -oy, 0);
+    rf_begin_shader(sprite_shader);
+    bind_shader(sprite);
     rf_gfx_begin(RF_QUADS);
       rf_gfx_color4ub(color.r, color.g, color.b, color.a);
       // Bottom-left corner for texture and quad
@@ -124,6 +191,7 @@ rf_draw_sprite(mrb_state *mrb, rf_sprite *sprite)
       rf_gfx_tex_coord2f(corners[3][0], corners[3][1]);
       rf_gfx_vertex2f(dst.width, 0.0f);
     rf_gfx_end();
+    rf_end_shader();
     rf_end_blend_mode();
   rf_gfx_pop_matrix();
   rf_gfx_disable_texture();
@@ -136,6 +204,10 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   rf_sprite *sprite = mrb_malloc(mrb, sizeof *sprite);
   DATA_PTR(self) = sprite;
   rf_container *parent;
+  if (!shader_ready)
+  {
+    init_shader(mrb);
+  }
   sprite->base.container = NULL;
   sprite->base.z = 0;
   sprite->base.draw = (rf_drawable_draw_callback)rf_draw_sprite;
@@ -144,6 +216,8 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   sprite->visible = FALSE;
   sprite->rotation = 0;
   sprite->blend_mode = RF_BLEND_ALPHA;
+  sprite->flash_time = 0;
+  sprite->flash_color.a = 0;
   mrb_value position = mrb_point_new(mrb, 0, 0);
   mrb_value anchor = mrb_point_new(mrb, 0, 0);
   mrb_value scale = mrb_point_new(mrb, 1 , 1);
@@ -351,6 +425,36 @@ sprite_get_color(mrb_state *mrb, mrb_value self)
   return mrb_iv_get(mrb, self, COLOR);
 }
 
+static mrb_value
+sprite_flash(mrb_state *mrb, mrb_value self)
+{
+  mrb_float t;
+  rf_color *color;
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  mrb_get_args(mrb, "df", &color, &mrb_color_data_type, &t);
+  sprite->flash_time = sprite->total_flash_time = t;
+  sprite->original_flash_color = *color;
+  return mrb_nil_value();
+}
+
+static mrb_value
+sprite_update(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  if (sprite->flash_time > 0)
+  {
+    mrb_float dt = mrb_get_dt(mrb);
+    sprite->flash_time -= dt;
+    if (sprite->flash_time < 0) sprite->flash_time = 0;
+    mrb_float left = sprite->flash_time / sprite->total_flash_time;
+    sprite->flash_color.a = (unsigned char)((mrb_float)sprite->original_flash_color.a * left);
+    sprite->flash_color.r = sprite->original_flash_color.r;
+    sprite->flash_color.g = sprite->original_flash_color.g;
+    sprite->flash_color.b = sprite->original_flash_color.b;
+  }
+  return mrb_nil_value();
+}
+
 void
 mrb_init_ogss_sprite(mrb_state *mrb)
 {
@@ -361,6 +465,9 @@ mrb_init_ogss_sprite(mrb_state *mrb)
 
   mrb_define_method(mrb, sprite, "disposed?", sprite_disposedQ, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "dispose", sprite_dispose, MRB_ARGS_NONE());
+
+  mrb_define_method(mrb, sprite, "flash", sprite_flash, MRB_ARGS_REQ(2));
+  mrb_define_method(mrb, sprite, "update", sprite_update, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, sprite, "z", sprite_get_z, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "z=", sprite_set_z, MRB_ARGS_REQ(1));

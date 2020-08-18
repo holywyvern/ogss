@@ -54,6 +54,13 @@ mrb_get_graphics_container(mrb_state *mrb)
   return &(get_config(mrb, graphics)->container);
 }
 
+mrb_float
+mrb_get_dt(mrb_state *mrb)
+{
+  mrb_value graphics = mrb_obj_value(mrb_module_get(mrb, "Graphics"));
+  return get_config(mrb, graphics)->dt;
+}
+
 rf_sizef
 mrb_get_graphics_size(mrb_state *mrb)
 {

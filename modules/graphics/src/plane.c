@@ -79,7 +79,7 @@ rf_draw_plane(mrb_state *mrb, rf_plane *plane)
 
   if (plane->viewport)
   {
-    vx = plane->viewport->offset->x;
+    vx = plane->viewport->offset->x; 
     vy = plane->viewport->offset->y;
     vw = plane->viewport->rect->width;
     vh = plane->viewport->rect->height;
@@ -92,8 +92,8 @@ rf_draw_plane(mrb_state *mrb, rf_plane *plane)
   }
   if (!vw || !vh) return;
 
-  float ox = plane_mod(plane->offset->x + vx, dst.width);
-  float oy = plane_mod(plane->offset->y + vy, dst.height);
+  float ox = vx + plane_mod(plane->offset->x + vx, dst.width);
+  float oy = vy + plane_mod(plane->offset->y + vy, dst.height);
 
   float corners[4][2] = {
     // Bottom-left corner for texture and quad

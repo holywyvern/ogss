@@ -49,6 +49,14 @@ class Sprite
     end
   end
 
+  def color=(value)
+    if value.is_a?(Array)
+      color.set(*value)
+    else
+      color.set(value)
+    end
+  end
+
   def mirror_x
     scale.x.negative?
   end

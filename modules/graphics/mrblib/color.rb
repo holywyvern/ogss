@@ -1,4 +1,8 @@
 class Color
+  def self.random(alpha=255)
+    new(rand(255), rand(255), rand(255), alpha)
+  end
+
   def invert
     dup.invert!
   end

@@ -19,6 +19,8 @@ typedef struct rf_sprite rf_sprite;
 struct rf_sprite
 {
   rf_drawable   base;
+  rf_color      original_flash_color;
+  rf_color      flash_color;
   rf_bitmap    *bitmap;
   rf_rec       *src_rect;
   rf_vec2      *position;
@@ -27,6 +29,8 @@ struct rf_sprite
   rf_color     *color;
   mrb_bool      visible;
   rf_blend_mode blend_mode;
+  mrb_float     total_flash_time;
+  mrb_float     flash_time;
   float         rotation;
 };
 
