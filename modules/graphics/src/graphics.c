@@ -193,15 +193,26 @@ mrb_graphics_fadeout(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+#define GL_RGBA 0x1908
+#define GL_UNSIGNED_BYTE 0x1401
+
 static mrb_value
 mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
 {
   rf_graphics_config *config = get_config(mrb, self);
   if (config->is_frozen) return mrb_nil_value();
   config->is_frozen = TRUE;
-  rf_image data = rf_get_screen_data_ez();
-  config->frozen_img = rf_load_texture_from_image(data);
-  rf_unload_image_ez(data);
+  size_t size = config->width * config->height;
+  rf_color *buffer = mrb_malloc(mrb, size * sizeof *buffer);
+  rf_get_context()->gfx_ctx.gl.ReadPixels(0, 0, config->width, config->height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+  rf_image image;
+  image.data   = buffer;
+  image.width  = config->width;
+  image.height = config->height;
+  image.format = RF_UNCOMPRESSED_R8G8B8A8;
+  image.valid  = true;
+  config->frozen_img = rf_load_texture_from_image(image);
+  rf_unload_image(image, mrb_get_allocator(mrb));
   return mrb_nil_value();
 }
 

@@ -25,6 +25,9 @@ void
 mrb_init_ogss_plane(mrb_state *mrb);
 
 void
+mrb_init_ogss_window(mrb_state *mrb);
+
+void
 mrb_ogss_graphics_gem_init(mrb_state *mrb)
 {
   mrb_define_class(mrb, "DisposedError", mrb->eStandardError_class);
@@ -36,6 +39,7 @@ mrb_ogss_graphics_gem_init(mrb_state *mrb)
   mrb_init_ogss_viewport(mrb);
   mrb_init_ogss_sprite(mrb);
   mrb_init_ogss_plane(mrb);
+  mrb_init_ogss_window(mrb);
 }
 
 void
