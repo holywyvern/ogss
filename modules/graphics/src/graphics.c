@@ -220,6 +220,10 @@ static mrb_value
 mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
 {
   rf_graphics_config *config = get_config(mrb, self);
+  mrb_value last_update = mrb_iv_get(mrb, self, LAST_UPDATE);
+  mrb_value now = mrb_funcall(mrb, mrb_obj_value(mrb_class_get(mrb, "Time")), "now", 0);
+  config->dt = mrb_float(mrb_Float(mrb, mrb_funcall(mrb, now, "-", 1, last_update)));
+  mrb_iv_set(mrb, self, LAST_UPDATE, now);
 #ifdef OGSS_PLATFORM_GLFW
   glfwSwapBuffers(config->window);
   glfwPollEvents();
@@ -241,34 +245,13 @@ static const float corners[4][2] = {
   { 1, 1 }          
 };
 
-static mrb_value
-mrb_graphics_update(mrb_state *mrb, mrb_value self)
+static void
+draw_screen(rf_texture2d tex, rf_color color)
 {
-  mrb_graphics_frame_reset(mrb, self);
-  rf_graphics_config *config = get_config(mrb, self);
-  mrb_value last_update = mrb_iv_get(mrb, self, LAST_UPDATE);
-  mrb_value now = mrb_funcall(mrb, mrb_obj_value(mrb_class_get(mrb, "Time")), "now", 0);
-  config->dt = mrb_float(mrb_Float(mrb, mrb_funcall(mrb, now, "-", 1, last_update)));
-  mrb_iv_set(mrb, self, LAST_UPDATE, now);
-  rf_begin();
-  mrb_container_update(mrb, &(config->container));
-  rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
-  rf_begin_render_to_texture(config->render_texture);
-  mrb_container_draw_children(mrb, &(config->container));
-  rf_end_render_to_texture();
-  rf_texture2d tex;
-  if (config->is_frozen)
-  {
-    tex = config->frozen_img;
-  }
-  else
-  {
-    tex = config->render_texture.texture;
-  }
   rf_gfx_enable_texture(tex.id);
   rf_gfx_push_matrix();
     rf_gfx_begin(RF_QUADS);
-      rf_gfx_color4ub(255, 255, 255, config->brightness);
+      rf_gfx_color4ub(color.a, color.g, color.b, color.a);
       // Bottom-left corner for texture and quad
       rf_gfx_tex_coord2f(corners[0][0], corners[0][1]);
       rf_gfx_vertex2f(0.0f, 0.0f);
@@ -284,6 +267,29 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
     rf_gfx_end();
   rf_gfx_pop_matrix();
   rf_gfx_disable_texture();
+}
+
+static mrb_value
+mrb_graphics_update(mrb_state *mrb, mrb_value self)
+{
+  mrb_graphics_frame_reset(mrb, self);
+  rf_graphics_config *config = get_config(mrb, self);
+  rf_begin();
+  mrb_container_update(mrb, &(config->container));
+  rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
+  rf_begin_render_to_texture(config->render_texture);
+    mrb_container_draw_children(mrb, &(config->container));
+  rf_end_render_to_texture();
+  rf_texture2d tex;
+  if (config->is_frozen)
+  {
+    tex = config->frozen_img;
+  }
+  else
+  {
+    tex = config->render_texture.texture;
+  }
+  draw_screen(tex, (rf_color){255, 255, 255, config->brightness});
   rf_end();
   config->frame_count += 1;  
   return mrb_nil_value();
@@ -292,9 +298,39 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_graphics_transition(mrb_state *mrb, mrb_value self)
 {
+  mrb_float duration, vague;
+  const char *name;
   rf_graphics_config *config = get_config(mrb, self);
   if (!config->is_frozen) return mrb_nil_value();
-  // TODO: Perform transition
+  mrb_int argc = mrb_get_args(mrb, "|fzf", &duration, &name, &vague);
+  if (argc < 3) vague = 40;
+  if (argc < 2) name = NULL;
+  if (argc < 1) duration = 0.17;
+  if (duration > 0)
+  {
+    if (name)
+    {
+      // TODO: Perform image transition
+    }
+    else
+    {
+      mrb_float dt = duration;
+      while (dt > 0)
+      {
+        dt -= config->dt;
+        if (dt < 0) dt = 0;
+        draw_screen(config->render_texture.texture, (rf_color){255, 255, 255, config->brightness});
+        mrb_int left = (mrb_int)(255 * dt / duration);
+        mrb_int bg = config->brightness * left / 255;
+        rf_begin();
+        rf_begin_blend_mode(RF_BLEND_ALPHA);
+          draw_screen(config->frozen_img, (rf_color){255, 255, 255, bg});
+        rf_end_blend_mode();
+        rf_end();
+        mrb_graphics_frame_reset(mrb, self);
+      }
+    }
+  }
   rf_unload_texture(config->frozen_img);
   config->is_frozen = FALSE;
   return mrb_nil_value();
