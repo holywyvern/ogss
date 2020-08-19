@@ -113,6 +113,17 @@ bind_shader(rf_viewport *view)
   rf_gfx_set_shader_value(viewport_shader, shader_locations.tone, tone, RF_UNIFORM_VEC4);
 }
 
+static const float corners[4][2] = {
+  // Bottom-left corner for texture and quad
+  { 0, 1 },
+  // Bottom-right corner for texture and quad
+  { 0, 0 },
+  // Top-right corner for texture and quad
+  { 1, 0 },
+  // Top-left corner for texture and quad
+  { 1, 1 }          
+};
+
 static void
 rf_viewport_update(mrb_state *mrb, rf_viewport *viewport)
 {
@@ -146,16 +157,7 @@ rf_viewport_draw(mrb_state *mrb, rf_viewport *viewport)
   int h = (int)viewport->rect->height;
   if (!w || !h || !viewport->visible) return;
 
-  float corners[4][2] = {
-    // Bottom-left corner for texture and quad
-    { 0, 1 },
-    // Bottom-right corner for texture and quad
-    { 0, 0 },
-    // Top-right corner for texture and quad
-    { 1, 0 },
-    // Top-left corner for texture and quad
-    { 1, 1 }          
-  };
+
   rf_color color = *(viewport->color);
   rf_gfx_enable_texture(viewport->render.texture.id);
   rf_gfx_push_matrix();

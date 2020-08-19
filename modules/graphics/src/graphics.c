@@ -119,6 +119,8 @@ mrb_graphics_resize_screen(mrb_state *mrb, mrb_value self)
   config->height = height;
   if (config->is_open)
   {
+    rf_unload_render_texture(config->render_texture);
+    config->render_texture = rf_load_render_texture((int)config->width, (int)config->height);
 #ifdef OGSS_PLATFORM_GLFW
     glfwSetWindowSize(config->window, (int)width, (int)height);
 #endif
@@ -127,20 +129,67 @@ mrb_graphics_resize_screen(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+mrb_graphics_update(mrb_state *mrb, mrb_value self);
+
+static mrb_value
 mrb_graphics_wait(mrb_state *mrb, mrb_value self)
 {
+  mrb_float tx;
+  mrb_get_args(mrb, "f", &tx);
+  rf_graphics_config *config = get_config(mrb, self);
+  while (tx > 0)
+  {
+    tx -= config->dt;
+    mrb_graphics_update(mrb, self);
+  }
   return mrb_nil_value();
 }
 
 static mrb_value
 mrb_graphics_fadein(mrb_state *mrb, mrb_value self)
 {
+  mrb_float tx;
+  mrb_get_args(mrb, "f", &tx);
+  rf_graphics_config *config = get_config(mrb, self);
+  if (tx > 0)
+  {
+    mrb_float tc = tc;
+    mrb_float brightness = (mrb_float)config->brightness;
+    while (tc > 0)
+    {
+      tc -= config->dt;
+      if (tc < 0) tc = 0;
+      config->brightness = (mrb_int)(brightness * tc / tx);
+      mrb_graphics_update(mrb, self);
+    }
+  }
+  else
+  {
+    config->brightness = 0;
+  }
   return mrb_nil_value();
 }
 
 static mrb_value
 mrb_graphics_fadeout(mrb_state *mrb, mrb_value self)
 {
+  mrb_float tx;
+  mrb_get_args(mrb, "f", &tx);
+  rf_graphics_config *config = get_config(mrb, self);
+  if (tx > 0)
+  {
+    mrb_float tc = tc;
+    while (tc > 0)
+    {
+      tc -= config->dt;
+      config->brightness = (mrb_int)(255.0 * (1 - tc / tx));
+      mrb_graphics_update(mrb, self);
+    }
+  }
+  else
+  {
+    config->brightness = 255;
+  }
   return mrb_nil_value();
 }
 
@@ -152,7 +201,6 @@ mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
   config->is_frozen = TRUE;
   rf_image data = rf_get_screen_data_ez();
   config->frozen_img = rf_load_texture_from_image(data);
-  config->render_texture = rf_load_render_texture((int)config->width, (int)config->height);
   rf_unload_image_ez(data);
   return mrb_nil_value();
 }
@@ -171,6 +219,17 @@ mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+static const float corners[4][2] = {
+  // Bottom-left corner for texture and quad
+  { 0, 1 },
+  // Bottom-right corner for texture and quad
+  { 0, 0 },
+  // Top-right corner for texture and quad
+  { 1, 0 },
+  // Top-left corner for texture and quad
+  { 1, 1 }          
+};
+
 static mrb_value
 mrb_graphics_update(mrb_state *mrb, mrb_value self)
 {
@@ -183,17 +242,37 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
   rf_begin();
   mrb_container_update(mrb, &(config->container));
   rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
-  if (config->is_frozen)
-  {
-    rf_begin_render_to_texture(config->render_texture);
-  }
-  rf_camera2d cam = {0};
+  rf_begin_render_to_texture(config->render_texture);
   mrb_container_draw_children(mrb, &(config->container));
+  rf_end_render_to_texture();
+  rf_texture2d tex;
   if (config->is_frozen)
   {
-    rf_end_render_to_texture();
-    rf_draw_texture(config->frozen_img, 0, 0, RF_RAYWHITE);
+    tex = config->frozen_img;
   }
+  else
+  {
+    tex = config->render_texture.texture;
+  }
+  rf_gfx_enable_texture(tex.id);
+  rf_gfx_push_matrix();
+    rf_gfx_begin(RF_QUADS);
+      rf_gfx_color4ub(255, 255, 255, config->brightness);
+      // Bottom-left corner for texture and quad
+      rf_gfx_tex_coord2f(corners[0][0], corners[0][1]);
+      rf_gfx_vertex2f(0.0f, 0.0f);
+      // Bottom-right corner for texture and quad
+      rf_gfx_tex_coord2f(corners[1][0], corners[1][1]);
+      rf_gfx_vertex2f(0.0f, tex.height);
+      // Top-right corner for texture and quad
+      rf_gfx_tex_coord2f(corners[2][0], corners[2][1]);
+      rf_gfx_vertex2f(tex.width, tex.height);
+      // Top-left corner for texture and quad
+      rf_gfx_tex_coord2f(corners[3][0], corners[3][1]);
+      rf_gfx_vertex2f(tex.width, 0.0f);
+    rf_gfx_end();
+  rf_gfx_pop_matrix();
+  rf_gfx_disable_texture();
   rf_end();
   config->frame_count += 1;  
   return mrb_nil_value();
@@ -205,7 +284,6 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
   rf_graphics_config *config = get_config(mrb, self);
   if (!config->is_frozen) return mrb_nil_value();
   // TODO: Perform transition
-  rf_unload_render_texture(config->render_texture);
   rf_unload_texture(config->frozen_img);
   config->is_frozen = FALSE;
   return mrb_nil_value();
@@ -362,6 +440,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   config->render_batch = rf_create_default_render_batch(alloc);
   rf_set_active_render_batch(&(config->render_batch));
   config->is_open = 1;
+  config->render_texture = rf_load_render_texture((int)config->width, (int)config->height);
   mrb_value tc = mrb_obj_value(mrb_class_get(mrb, "Time"));
   mrb_iv_set(mrb, mrb_obj_value(graphics), LAST_UPDATE, mrb_funcall(mrb, tc, "now", 0));
   config->dt = 0;
