@@ -21,6 +21,7 @@ struct rf_sprite
   rf_drawable   base;
   rf_color      original_flash_color;
   rf_color      flash_color;
+  rf_vec2       bush;
   rf_bitmap    *bitmap;
   rf_rec       *src_rect;
   rf_vec2      *position;

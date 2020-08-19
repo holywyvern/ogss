@@ -1,9 +1,16 @@
 class Sprite
-  delegate :width, :height, to: :src_rect
   delegate :x, :x=, :y, :y=, to: :position
   delegate :x, :x=, :y, :y=, to: :anchor, prefix: true
   delegate :x, :x=, :y, :y=, to: :scale, prefix: true
   delegate :x, :x=, :y, :y=, to: :zoom, prefix: true
+
+  def width
+    src_rect.width * scale.x.abs
+  end
+
+  def height
+    src_rect.height * scale.y.abs
+  end
 
   def ox
     anchor.x * width

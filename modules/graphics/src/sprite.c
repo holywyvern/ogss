@@ -40,7 +40,7 @@ static mrb_bool shader_ready = FALSE;
 
 static struct
 {
-  int flash_color;
+  int flash_color, bush;
 } shader_locations;
 
 static const char * sprite_fshader =
@@ -59,14 +59,18 @@ static const char * sprite_fshader =
 "uniform sampler2D texture0;"
 "uniform vec4 col_diffuse;"
 "uniform vec4 flash_color;"
+"uniform vec2 bush;"
 "void main()"
 "{"
+"    float bush_op = 1;"
+"    if (frag_tex_coord.y > bush.y) bush_op = bush.x;"
 #if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
 "    vec4 texel_color = texture2D(texture0, frag_tex_coord);" // NOTE: texture2D() is deprecated on OpenGL 3.3 and ES 3.0
 "    float a = 1 - flash_color.a;"
 "    texel_color.r = texel_color.r * a + flash_color.r * flash_color.a;"
 "    texel_color.g = texel_color.g * a + flash_color.g * flash_color.a;"
 "    texel_color.b = texel_color.b * a + flash_color.b * flash_color.a;"
+"    texel_color.a = texel_color.a * bush_op;"
 "    frag_color = texel_color*col_diffuse*frag_color;"
 #elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
 "    vec4 texel_color = texture(texture0, frag_tex_coord);"
@@ -74,6 +78,7 @@ static const char * sprite_fshader =
 "    texel_color.r = texel_color.r * a + flash_color.r * flash_color.a;"
 "    texel_color.g = texel_color.g * a + flash_color.g * flash_color.a;"
 "    texel_color.b = texel_color.b * a + flash_color.b * flash_color.a;"
+"    texel_color.a = texel_color.a * bush_op;"
 "    final_color = texel_color*col_diffuse*frag_color;"
 #endif
 "}"
@@ -85,6 +90,7 @@ init_shader(mrb_state *mrb)
   rf_get_default_shader();
   sprite_shader = rf_gfx_load_shader(NULL, sprite_fshader);
   shader_locations.flash_color = rf_gfx_get_shader_location(sprite_shader, "flash_color");
+  shader_locations.bush = rf_gfx_get_shader_location(sprite_shader, "bush");
   shader_ready = TRUE;
 }
 
@@ -97,7 +103,15 @@ bind_shader(rf_sprite *sprite)
     (float)sprite->flash_color.b / 255.0f, 
     (float)sprite->flash_color.a / 255.0f,
   };
+  float h = sprite->src_rect->height;
+  h = (sprite->src_rect->height - sprite->bush.y) / h;
+  float th = sprite->bitmap->texture.height;
+  float bush[] = {
+    sprite->bush.x,
+    (sprite->src_rect->y + h * sprite->src_rect->height) / th
+  };
   rf_gfx_set_shader_value(sprite_shader, shader_locations.flash_color, rgba, RF_UNIFORM_VEC4);
+  rf_gfx_set_shader_value(sprite_shader, shader_locations.bush, bush, RF_UNIFORM_VEC2);
 }
 
 static inline void
@@ -218,6 +232,8 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   sprite->blend_mode = RF_BLEND_ALPHA;
   sprite->flash_time = 0;
   sprite->flash_color.a = 0;
+  sprite->bush.y = 0;
+  sprite->bush.x = 0.5;
   mrb_value position = mrb_point_new(mrb, 0, 0);
   mrb_value anchor = mrb_point_new(mrb, 0, 0);
   mrb_value scale = mrb_point_new(mrb, 1 , 1);
@@ -455,6 +471,40 @@ sprite_update(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+static mrb_value
+sprite_get_bush_depth(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  return mrb_fixnum_value((mrb_int)sprite->bush.y);
+}
+
+static mrb_value
+sprite_set_bush_depth(mrb_state *mrb, mrb_value self)
+{
+  mrb_float depth;
+  mrb_get_args(mrb, "f", &depth);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  sprite->bush.y = depth;
+  return mrb_fixnum_value((mrb_int)depth);
+}
+
+static mrb_value
+sprite_get_bush_opacity(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  return mrb_fixnum_value((mrb_int)(255.0f * sprite->bush.x));
+}
+
+static mrb_value
+sprite_set_bush_opacity(mrb_state *mrb, mrb_value self)
+{
+  mrb_float opacity;
+  mrb_get_args(mrb, "f", &opacity);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  sprite->bush.x = (float)(rf_clamp(opacity, 0, 255) / 255.0f);
+  return mrb_fixnum_value((mrb_int)opacity);
+}
+
 void
 mrb_init_ogss_sprite(mrb_state *mrb)
 {
@@ -490,6 +540,12 @@ mrb_init_ogss_sprite(mrb_state *mrb)
 
   mrb_define_method(mrb, sprite, "blend_mode", sprite_get_blend_mode, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "blend_mode=", sprite_set_blend_mode, MRB_ARGS_REQ(1));
+
+  mrb_define_method(mrb, sprite, "bush_depth", sprite_get_bush_depth, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "bush_depth=", sprite_set_bush_depth, MRB_ARGS_REQ(1));
+
+  mrb_define_method(mrb, sprite, "bush_opacity", sprite_get_bush_opacity, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "bush_opacity=", sprite_set_bush_opacity, MRB_ARGS_REQ(1));
 
   mrb_define_method(mrb, sprite, "rotation", sprite_get_rotation, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "rotation=", sprite_set_rotation, MRB_ARGS_REQ(1));
