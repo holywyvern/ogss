@@ -21,6 +21,14 @@ class Viewport
     end
   end
 
+  def tone=(value)
+    if value.is_a?(Array)
+      tone.set(*value)
+    else
+      tone.set(value)
+    end
+  end
+
   def opacity=(value)
     color.alpha = value
   end

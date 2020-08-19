@@ -44,6 +44,14 @@ class Plane
     end
   end
 
+  def tone=(value)
+    if value.is_a?(Array)
+      tone.set(*value)
+    else
+      tone.set(value)
+    end
+  end
+
   def opacity
     color.alpha
   end

@@ -6,6 +6,7 @@
 #include <rayfork.h>
 
 #include <ogss/drawable.h>
+#include <ogss/tone.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,6 +22,7 @@ struct rf_viewport
   rf_color             original_flash_color;
   rf_color             flash_color;  
   rf_color            *color;
+  rf_tone             *tone;
   rf_rec              *rect;
   rf_vec2             *offset;
   rf_render_texture2d  render;

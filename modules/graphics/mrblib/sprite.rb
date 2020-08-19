@@ -64,6 +64,14 @@ class Sprite
     end
   end
 
+  def tone=(value)
+    if value.is_a?(Array)
+      tone.set(*value)
+    else
+      tone.set(value)
+    end
+  end
+
   def mirror_x
     scale.x.negative?
   end

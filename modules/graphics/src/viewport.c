@@ -14,6 +14,7 @@
 
 #define RECT mrb_intern_lit(mrb, "#rect")
 #define COLOR mrb_intern_lit(mrb, "#color")
+#define TONE mrb_intern_lit(mrb, "#tone")
 #define OFFSET mrb_intern_lit(mrb, "#offset")
 
 static void
@@ -32,7 +33,7 @@ const struct mrb_data_type mrb_viewport_data_type = { "Viewport", free_viewport 
 
 static struct
 {
-  int flash_color;
+  int flash_color, tone;
 } shader_locations;
 
 static rf_shader viewport_shader;
@@ -55,21 +56,29 @@ static const char * frag =
 "uniform sampler2D texture0;"
 "uniform vec4 col_diffuse;"
 "uniform vec4 flash_color;"
+"uniform vec4 tone;"
 "void main()"
 "{"
 #if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
 "    vec4 texel_color = texture2D(texture0, frag_tex_coord);" // NOTE: texture2D() is deprecated on OpenGL 3.3 and ES 3.0
-"    float a = 1 - flash_color.a;"
-"    texel_color.r = texel_color.r * a + flash_color.r * flash_color.a;"
-"    texel_color.g = texel_color.g * a + flash_color.g * flash_color.a;"
-"    texel_color.b = texel_color.b * a + flash_color.b * flash_color.a;"
-"    frag_color = texel_color*col_diffuse*frag_color;"
 #elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
 "    vec4 texel_color = texture(texture0, frag_tex_coord);"
+#endif
 "    float a = 1 - flash_color.a;"
+"    float ta = 1 - tone.a;"
+"    texel_color.r = texel_color.r + tone.r;"
+"    texel_color.g = texel_color.g + tone.g;"
+"    texel_color.b = texel_color.b + tone.b;"
+"    float gray = (0.3 * texel_color.r) + (0.59 * texel_color.g) + (0.11 * texel_color.b);"
 "    texel_color.r = texel_color.r * a + flash_color.r * flash_color.a;"
 "    texel_color.g = texel_color.g * a + flash_color.g * flash_color.a;"
 "    texel_color.b = texel_color.b * a + flash_color.b * flash_color.a;"
+"    texel_color.r = texel_color.r * ta + gray * tone.a;"
+"    texel_color.g = texel_color.g * ta + gray * tone.a;"
+"    texel_color.b = texel_color.b * ta + gray * tone.a;"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+"    frag_color = texel_color*col_diffuse*frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
 "    final_color = texel_color*col_diffuse*frag_color;"
 #endif
 "}"
@@ -81,19 +90,27 @@ init_shader(mrb_state *mrb)
   rf_get_default_shader();
   viewport_shader = rf_gfx_load_shader(NULL, frag);
   shader_locations.flash_color = rf_gfx_get_shader_location(viewport_shader, "flash_color");
+  shader_locations.tone = rf_gfx_get_shader_location(viewport_shader, "tone");
   shader_ready = TRUE;
 }
 
 static inline void
-bind_shader(rf_viewport *sprite)
+bind_shader(rf_viewport *view)
 {
   float rgba[] = {
-    (float)sprite->flash_color.r / 255.0f, 
-    (float)sprite->flash_color.g / 255.0f, 
-    (float)sprite->flash_color.b / 255.0f, 
-    (float)sprite->flash_color.a / 255.0f,
+    (float)view->flash_color.r / 255.0f, 
+    (float)view->flash_color.g / 255.0f, 
+    (float)view->flash_color.b / 255.0f, 
+    (float)view->flash_color.a / 255.0f,
+  };
+  float tone[] = {
+    (float)view->tone->r / 255.f,
+    (float)view->tone->g / 255.f,
+    (float)view->tone->b / 255.f,
+    (float)view->tone->a / 255.f
   };
   rf_gfx_set_shader_value(viewport_shader, shader_locations.flash_color, rgba, RF_UNIFORM_VEC4);
+  rf_gfx_set_shader_value(viewport_shader, shader_locations.tone, tone, RF_UNIFORM_VEC4);
 }
 
 static void
@@ -184,10 +201,13 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
   data->base.base.draw   = (rf_drawable_draw_callback)rf_viewport_draw;
   rf_container *c = mrb_get_graphics_container(mrb);
   mrb_value color = mrb_color_white(mrb);
+  mrb_value tone = mrb_tone_neutral(mrb);
   mrb_value offset = mrb_point_new(mrb, 0, 0);
   data->color = mrb_get_color(mrb, color);
   data->offset = mrb_get_point(mrb, offset);
+  data->tone = mrb_get_tone(mrb, tone);
   mrb_iv_set(mrb, self, COLOR, color);
+  mrb_iv_set(mrb, self, TONE, tone);
   mrb_iv_set(mrb, self, OFFSET, offset);
   mrb_container_add_child(mrb, c, &(data->base.base));
   switch (argc)
@@ -248,6 +268,12 @@ static mrb_value
 viewport_color(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, COLOR);
+}
+
+static mrb_value
+viewport_tone(mrb_state *mrb, mrb_value self)
+{
+  return mrb_iv_get(mrb, self, TONE);
 }
 
 static mrb_value
@@ -343,6 +369,7 @@ mrb_init_ogss_viewport(mrb_state *mrb)
 
   mrb_define_method(mrb, viewport, "rect", viewport_rect, MRB_ARGS_NONE());
   mrb_define_method(mrb, viewport, "color", viewport_color, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "tone", viewport_tone, MRB_ARGS_NONE());
   mrb_define_method(mrb, viewport, "offset", viewport_offset, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, viewport, "disposed?", viewport_disposedQ, MRB_ARGS_NONE());

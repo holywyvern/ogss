@@ -7,6 +7,7 @@
 
 #include <ogss/bitmap.h>
 #include <ogss/drawable.h>
+#include <ogss/tone.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,7 @@ struct rf_sprite
   rf_vec2      *anchor;
   rf_vec2      *scale;
   rf_color     *color;
+  rf_tone      *tone;
   mrb_bool      visible;
   rf_blend_mode blend_mode;
   mrb_float     total_flash_time;

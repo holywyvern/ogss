@@ -9,6 +9,7 @@
 #include <ogss/drawable.h>
 #include <ogss/viewport.h>
 #include <ogss/bitmap.h>
+#include <ogss/tone.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +27,7 @@ struct rf_plane
   rf_vec2      *offset;
   rf_vec2      *scale;
   rf_color     *color;
+  rf_tone      *tone;
   rf_blend_mode blend_mode;
   mrb_bool      visible;
 };

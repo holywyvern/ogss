@@ -18,7 +18,16 @@
 #define OFFSET mrb_intern_cstr(mrb, "#offset")
 #define SCALE mrb_intern_cstr(mrb, "#scale")
 #define COLOR mrb_intern_cstr(mrb, "#color")
+#define TONE mrb_intern_cstr(mrb, "#tone")
 #define VIEWPORT mrb_intern_cstr(mrb, "#viewport")
+
+static struct
+{
+  int tone;
+} shader_locations;
+
+static rf_shader plane_shader;
+static mrb_bool shader_ready = FALSE;
 
 static void
 free_plane(mrb_state *mrb, void *p)
@@ -49,6 +58,66 @@ swap_point(float *p1, float *p2)
   p1[1] = p2[1];
   p2[0] = tmp[0];
   p2[1] = tmp[1];
+}
+
+static const char * frag =
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+"#version 100\n"
+"precision mediump float;"
+"varying vec2 frag_tex_coord;"
+"varying vec4 frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+"#version 330\n"
+"precision mediump float;"
+"in vec2 frag_tex_coord;"
+"in vec4 frag_color;"
+"out vec4 final_color;"
+#endif
+"uniform sampler2D texture0;"
+"uniform vec4 col_diffuse;"
+"uniform vec4 tone;"
+"void main()"
+"{"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+"    vec4 texel_color = texture2D(texture0, frag_tex_coord);" // NOTE: texture2D() is deprecated on OpenGL 3.3 and ES 3.0
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+"    vec4 texel_color = texture(texture0, frag_tex_coord);"
+#endif
+"    float ta = 1 - tone.a;"
+"    texel_color.r = texel_color.r + tone.r;"
+"    texel_color.g = texel_color.g + tone.g;"
+"    texel_color.b = texel_color.b + tone.b;"
+"    float gray = (0.3 * texel_color.r) + (0.59 * texel_color.g) + (0.11 * texel_color.b);"
+"    texel_color.r = texel_color.r * ta + gray * tone.a;"
+"    texel_color.g = texel_color.g * ta + gray * tone.a;"
+"    texel_color.b = texel_color.b * ta + gray * tone.a;"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+"    frag_color = texel_color*col_diffuse*frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+"    final_color = texel_color*col_diffuse*frag_color;"
+#endif
+"}"
+;
+
+static void
+init_shader(mrb_state *mrb)
+{
+  rf_get_default_shader();
+  plane_shader = rf_gfx_load_shader(NULL, frag);
+  shader_locations.tone = rf_gfx_get_shader_location(plane_shader, "tone");
+  shader_ready = TRUE;
+}
+
+static inline void
+bind_shader(rf_plane *plane)
+{
+  float tone[] = {
+    (float)plane->tone->r / 255.f,
+    (float)plane->tone->g / 255.f,
+    (float)plane->tone->b / 255.f,
+    (float)plane->tone->a / 255.f
+  };
+  rf_gfx_set_shader_value(plane_shader, shader_locations.tone, tone, RF_UNIFORM_VEC4);
 }
 
 static void
@@ -123,7 +192,8 @@ rf_draw_plane(mrb_state *mrb, rf_plane *plane)
 
   rf_gfx_enable_texture(texture.id);
   rf_begin_blend_mode(plane->blend_mode);
- 
+  rf_begin_shader(plane_shader);
+  bind_shader(plane);
   for (mrb_int j = -2; j < ty; ++j)
   {
     for (mrb_int i = -2; i < tx; ++i)
@@ -150,6 +220,7 @@ rf_draw_plane(mrb_state *mrb, rf_plane *plane)
       rf_gfx_pop_matrix();
     }
   }
+  rf_end_shader();
   rf_end_blend_mode();
   rf_gfx_disable_texture();
 }
@@ -157,6 +228,10 @@ rf_draw_plane(mrb_state *mrb, rf_plane *plane)
 static mrb_value
 plane_initialize(mrb_state *mrb, mrb_value self)
 {
+  if (!shader_ready)
+  {
+    init_shader(mrb);
+  }
   DATA_TYPE(self) = &mrb_plane_data_type;
   rf_plane *plane = mrb_malloc(mrb, sizeof *plane);
   DATA_PTR(self) = plane;
@@ -171,13 +246,16 @@ plane_initialize(mrb_state *mrb, mrb_value self)
   mrb_value offset = mrb_point_new(mrb, 0, 0);
   mrb_value scale = mrb_point_new(mrb, 1 , 1);
   mrb_value color = mrb_color_white(mrb);
+  mrb_value tone  = mrb_tone_neutral(mrb);
   plane->offset = mrb_get_point(mrb, offset);
   plane->scale = mrb_get_point(mrb, scale);
   plane->color = mrb_get_color(mrb, color);
+  plane->tone = mrb_get_tone(mrb, tone);
   plane->visible = TRUE;
   plane->viewport = NULL;
   mrb_iv_set(mrb, self, SCALE, scale);
   mrb_iv_set(mrb, self, COLOR, color);
+  mrb_iv_set(mrb, self, TONE, tone);
   mrb_iv_set(mrb, self, OFFSET, offset);
   mrb_iv_set(mrb, self, BITMAP, mrb_nil_value());
   mrb_value parent_value = mrb_nil_value();
@@ -342,6 +420,12 @@ plane_get_color(mrb_state *mrb, mrb_value self)
   return mrb_iv_get(mrb, self, COLOR);
 }
 
+static mrb_value
+plane_get_tone(mrb_state *mrb, mrb_value self)
+{
+  return mrb_iv_get(mrb, self, TONE);
+}
+
 void
 mrb_init_ogss_plane(mrb_state *mrb)
 {
@@ -373,4 +457,5 @@ mrb_init_ogss_plane(mrb_state *mrb)
   mrb_define_method(mrb, plane, "scale", plane_get_scale, MRB_ARGS_NONE());
   mrb_define_method(mrb, plane, "zoom", plane_get_scale, MRB_ARGS_NONE());
   mrb_define_method(mrb, plane, "color", plane_get_color, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "tone", plane_get_tone, MRB_ARGS_NONE());
 }
