@@ -44,11 +44,11 @@ class Window
     color.alpha = value
   end
 
-  def color=(value)
+  def tone=(value)
     if value.is_a?(Array)
-      color.set(*value)
+      tone.set(*value)
     else
-      color.set(value)
+      tone.set(value)
     end
   end
 

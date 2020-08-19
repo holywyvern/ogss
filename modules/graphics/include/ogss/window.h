@@ -7,6 +7,7 @@
 
 #include <ogss/drawable.h>
 #include <ogss/bitmap.h>
+#include <ogss/tone.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +30,7 @@ struct rf_window
   rf_vec2          *offset;
   rf_rec           *rect;
   rf_rec           *cursor_rect;
-  rf_color         *color;
+  rf_tone          *tone;
   rf_bitmap        *skin;
   rf_bitmap        *contents;
   rf_window_padding padding;
