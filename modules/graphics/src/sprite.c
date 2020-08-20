@@ -250,6 +250,7 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   sprite->flash_color.a = 0;
   sprite->bush.y = 0;
   sprite->bush.x = 0.5;
+  sprite->wave_amp = sprite->wave_length = sprite->wave_phase = sprite->wave_speed = 0;
   mrb_value position = mrb_point_new(mrb, 0, 0);
   mrb_value anchor = mrb_point_new(mrb, 0, 0);
   mrb_value scale = mrb_point_new(mrb, 1 , 1);
@@ -530,6 +531,75 @@ sprite_set_bush_opacity(mrb_state *mrb, mrb_value self)
   return mrb_fixnum_value((mrb_int)opacity);
 }
 
+static mrb_value
+sprite_get_wave_amp(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  return mrb_float_value(mrb, sprite->wave_amp);
+}
+
+static mrb_value
+sprite_get_wave_length(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  return mrb_float_value(mrb, sprite->wave_length);
+}
+
+static mrb_value
+sprite_get_wave_speed(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  return mrb_float_value(mrb, sprite->wave_speed);
+}
+
+static mrb_value
+sprite_get_wave_phase(mrb_state *mrb, mrb_value self)
+{
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  return mrb_float_value(mrb, sprite->wave_phase);
+}
+
+static mrb_value
+sprite_set_wave_amp(mrb_state *mrb, mrb_value self)
+{
+  mrb_float value;
+  mrb_get_args(mrb, "f", &value);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  sprite->wave_amp = value;
+  return mrb_float_value(mrb, value);
+}
+
+static mrb_value
+sprite_set_wave_length(mrb_state *mrb, mrb_value self)
+{
+  mrb_float value;
+  mrb_get_args(mrb, "f", &value);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  sprite->wave_length = value;
+  return mrb_float_value(mrb, value);
+}
+
+
+static mrb_value
+sprite_set_wave_speed(mrb_state *mrb, mrb_value self)
+{
+  mrb_float value;
+  mrb_get_args(mrb, "f", &value);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  sprite->wave_speed = value;
+  return mrb_float_value(mrb, value);
+}
+
+static mrb_value
+sprite_set_wave_phase(mrb_state *mrb, mrb_value self)
+{
+  mrb_float value;
+  mrb_get_args(mrb, "f", &value);
+  rf_sprite *sprite = mrb_get_sprite(mrb, self);
+  sprite->wave_phase = value;
+  return mrb_float_value(mrb, value);
+}
+
 void
 mrb_init_ogss_sprite(mrb_state *mrb)
 {
@@ -577,4 +647,13 @@ mrb_init_ogss_sprite(mrb_state *mrb)
   mrb_define_method(mrb, sprite, "rotation=", sprite_set_rotation, MRB_ARGS_REQ(1));
   mrb_define_method(mrb, sprite, "angle", sprite_get_rotation, MRB_ARGS_NONE());
   mrb_define_method(mrb, sprite, "angle=", sprite_set_rotation, MRB_ARGS_REQ(1));
+
+  mrb_define_method(mrb, sprite, "wave_amp", sprite_get_wave_amp, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "wave_amp=", sprite_set_wave_amp, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, sprite, "wave_length", sprite_get_wave_length, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "wave_length=", sprite_set_wave_length, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, sprite, "wave_speed", sprite_get_wave_speed, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "wave_speed=", sprite_set_wave_speed, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, sprite, "wave_phase", sprite_get_wave_phase, MRB_ARGS_NONE());
+  mrb_define_method(mrb, sprite, "wave_phase=", sprite_set_wave_phase, MRB_ARGS_REQ(1));
 }
