@@ -58,8 +58,8 @@ draw_cursor(rf_window *window)
     255, 255, 255, (unsigned char)(window->opacity * window->cursor_opacity / 255)
   };
   rf_rec dst = *(window->cursor_rect);
-  dst.x += window->padding.left;
-  dst.y += window->padding.top;
+  dst.x += window->padding.left - window->skin_rects.border_left;
+  dst.y += window->padding.top - window->skin_rects.border_top;
   rf_draw_texture_npatch(
     window->skin->texture, window->skin_rects.cursor, dst,
     (rf_vec2){0, 0}, 0, color
@@ -146,8 +146,8 @@ bind_shader(rf_window *window)
 static void
 update_window(mrb_state *mrb, rf_window *window)
 {
-  int px = window->skin_rects.borders.top_left.width / 6;
-  int py = window->skin_rects.borders.top_left.height / 6;
+  int px = window->skin_rects.border_left;
+  int py = window->skin_rects.border_top;
   int w = window->rect->width - px * 2;
   int h = window->rect->height - py * 2;
   if (w != window->render.texture.width || h != window->render.texture.height)
@@ -193,7 +193,7 @@ update_window(mrb_state *mrb, rf_window *window)
         int h2 = h - (window->padding.top + window->padding.bottom);
         if (w2 <= 0 || h2 <= 0) return;
         src = (rf_rec){ window->offset->x, window->offset->y, w2, h2 };
-        dst = (rf_rec){ window->padding.left + px, window->padding.top + py, w2, h2 };
+        dst = (rf_rec){ window->padding.left, window->padding.top, w2, h2 };
         rf_draw_texture_region(window->contents->texture, src, dst, (rf_vec2){0, 0}, 0, color);
       }
     rf_end_blend_mode();
@@ -207,13 +207,13 @@ draw_contents(rf_window *window)
   int w = window->rect->width - window->skin_rects.borders.top_left.width;
   int h = window->rect->height - window->skin_rects.borders.top_left.height;
   if (w <= 0 || h <= 0) return;
-  int x = window->skin_rects.borders.top_left.width / 6;
-  int y = window->skin_rects.borders.top_left.height / 6;
+  int x = window->skin_rects.border_top;
+  int y = window->skin_rects.border_left;
   w = window->render.texture.width;
   h = window->render.texture.height;
   rf_gfx_enable_texture(window->render.texture.id);
   rf_gfx_push_matrix();
-    rf_gfx_translatef(0, h / 2, 0);
+    rf_gfx_translatef(x, y + h / 2, 0);
     rf_gfx_scalef(1, ((float)window->openness / 255.0f), 1);
     rf_gfx_translatef(0, -h / 2, 0);
     rf_gfx_begin(RF_QUADS);
@@ -682,6 +682,8 @@ set_skin_rects(rf_window *window, rf_bitmap *skin)
   window->skin_rects.borders.bottom        = (rf_rec){ hw + x3, hh - x3, x6, y3 };
   window->skin_rects.borders.left          = (rf_rec){      hw,      x3, x3, y6 };
   window->skin_rects.borders.right         = (rf_rec){  w - x3,      x3, x3, y6 };
+  window->skin_rects.border_left           = x / 2;
+  window->skin_rects.border_top            = y / 2;
 
   // command cursor
   window->skin_rects.cursor.type = RF_NPT_9PATCH;

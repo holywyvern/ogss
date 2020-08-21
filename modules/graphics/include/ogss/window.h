@@ -52,6 +52,7 @@ struct rf_window
       rf_rec    left;
       mrb_float offset;
     }      borders;
+    int border_left, border_top;
   }                   skin_rects;
   rf_render_texture2d render;
   rf_vec2            *offset;
