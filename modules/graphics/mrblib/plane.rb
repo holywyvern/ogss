@@ -52,6 +52,14 @@ class Plane
     end
   end
 
+  def show
+    self.visible = true
+  end
+
+  def hide
+    self.visible = false
+  end
+
   def opacity
     color.alpha
   end

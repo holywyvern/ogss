@@ -96,6 +96,14 @@ class Sprite
     color.alpha = value
   end
 
+  def show
+    self.visible = true
+  end
+
+  def hide
+    self.visible = false
+  end
+
   alias mirror mirror_x
   alias mirror= mirror_x=
   alias zoom= scale=

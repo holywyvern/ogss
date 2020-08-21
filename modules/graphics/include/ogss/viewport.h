@@ -28,7 +28,6 @@ struct rf_viewport
   rf_render_texture2d  render;
   mrb_float            total_flash_time;
   mrb_float            flash_time;
-  mrb_bool             visible;
 };
 
 static inline rf_viewport *

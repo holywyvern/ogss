@@ -53,6 +53,14 @@ class Viewport
     offset.y
   end
 
+  def show
+    self.visible = true
+  end
+
+  def hide
+    self.visible = false
+  end
+
   def oy=(value)
     offset.y = value
   end

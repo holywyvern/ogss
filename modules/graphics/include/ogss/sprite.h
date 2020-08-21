@@ -34,7 +34,6 @@ struct rf_sprite
   mrb_float     wave_length;
   mrb_float     wave_speed;
   mrb_float     wave_phase;
-  mrb_bool      visible;
   rf_blend_mode blend_mode;
   mrb_float     total_flash_time;
   mrb_float     flash_time;

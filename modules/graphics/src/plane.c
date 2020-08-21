@@ -123,7 +123,6 @@ bind_shader(rf_plane *plane)
 static void
 rf_draw_plane(mrb_state *mrb, rf_plane *plane)
 {
-  if (!plane->visible) return;
   if (!plane->bitmap) return;
 
   mrb_refresh_bitmap(plane->bitmap);
@@ -240,8 +239,8 @@ plane_initialize(mrb_state *mrb, mrb_value self)
   plane->base.z = 0;
   plane->base.draw = (rf_drawable_draw_callback)rf_draw_plane;
   plane->base.update = NULL;
+  plane->base.visible = FALSE;
   plane->bitmap = NULL;
-  plane->visible = FALSE;
   plane->blend_mode = RF_BLEND_ALPHA;
   mrb_value offset = mrb_point_new(mrb, 0, 0);
   mrb_value scale = mrb_point_new(mrb, 1 , 1);
@@ -251,7 +250,7 @@ plane_initialize(mrb_state *mrb, mrb_value self)
   plane->scale = mrb_get_point(mrb, scale);
   plane->color = mrb_get_color(mrb, color);
   plane->tone = mrb_get_tone(mrb, tone);
-  plane->visible = TRUE;
+  plane->base.visible = TRUE;
   plane->viewport = NULL;
   mrb_iv_set(mrb, self, SCALE, scale);
   mrb_iv_set(mrb, self, COLOR, color);
@@ -372,7 +371,7 @@ static mrb_value
 plane_get_visible(mrb_state *mrb, mrb_value self)
 {
   rf_plane *plane = mrb_get_plane(mrb, self);
-  return mrb_bool_value(plane->visible);
+  return mrb_bool_value(plane->base.visible);
 }
 
 static mrb_value
@@ -381,7 +380,7 @@ plane_set_visible(mrb_state *mrb, mrb_value self)
   mrb_bool value;
   rf_plane *plane = mrb_get_plane(mrb, self);
   mrb_get_args(mrb, "b", &value); 
-  plane->visible = value;
+  plane->base.visible = value;
   return mrb_bool_value(value);
 }
 

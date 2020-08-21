@@ -63,12 +63,26 @@ class Window
   def padding=(value)
     if value.is_a?(Array)
       padding.set(*value)
+    elsif value.is_a?(Numeric)
+      padding.top = padding.bottom = padding.left = padding.right = value
     else
       padding.set(value)
     end
   end
 
-  def update
-    self.cursor_opacity = 128 + 128 * Math.sin(Graphics.frame_count.to_f / 100)
+  def activate
+    self.active = true
+  end
+
+  def deactivate
+    self.active = false
+  end
+
+  def show
+    self.visible = true
+  end
+
+  def hide
+    self.visible = false
   end
 end

@@ -143,7 +143,6 @@ swap_point(float *p1, float *p2)
 static void
 rf_draw_sprite(mrb_state *mrb, rf_sprite *sprite)
 {
-  if (!sprite->visible) return;
   if (!sprite->bitmap) return;
 
   mrb_refresh_bitmap(sprite->bitmap);
@@ -242,8 +241,8 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   sprite->base.z = 0;
   sprite->base.draw = (rf_drawable_draw_callback)rf_draw_sprite;
   sprite->base.update = NULL;
+  sprite->base.visible = TRUE;
   sprite->bitmap = NULL;
-  sprite->visible = FALSE;
   sprite->rotation = 0;
   sprite->blend_mode = RF_BLEND_ALPHA;
   sprite->flash_time = 0;
@@ -263,7 +262,6 @@ sprite_initialize(mrb_state *mrb, mrb_value self)
   sprite->color = mrb_get_color(mrb, color);
   sprite->src_rect = mrb_get_rect(mrb, src_rect);
   sprite->tone = mrb_get_tone(mrb, tone);
-  sprite->visible = TRUE;
   mrb_iv_set(mrb, self, POSITION, position);
   mrb_iv_set(mrb, self, ANCHOR, anchor);
   mrb_iv_set(mrb, self, SCALE, scale);
@@ -329,7 +327,7 @@ static mrb_value
 sprite_get_visible(mrb_state *mrb, mrb_value self)
 {
   rf_sprite *sprite = mrb_get_sprite(mrb, self);
-  return mrb_bool_value(sprite->visible);
+  return mrb_bool_value(sprite->base.visible);
 }
 
 static mrb_value
@@ -338,7 +336,7 @@ sprite_set_visible(mrb_state *mrb, mrb_value self)
   mrb_bool value;
   rf_sprite *sprite = mrb_get_sprite(mrb, self);
   mrb_get_args(mrb, "b", &value); 
-  sprite->visible = value;
+  sprite->base.visible = value;
   return mrb_bool_value(value);
 }
 

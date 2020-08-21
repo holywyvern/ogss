@@ -24,6 +24,7 @@ struct rf_drawable
   rf_drawable_draw_callback     draw;
   mrb_int                       z;
   mrb_int                       id;
+  mrb_bool                      visible;
 };
 
 struct rf_container

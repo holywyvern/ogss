@@ -29,7 +29,6 @@ struct rf_plane
   rf_color     *color;
   rf_tone      *tone;
   rf_blend_mode blend_mode;
-  mrb_bool      visible;
 };
 
 static inline mrb_bool

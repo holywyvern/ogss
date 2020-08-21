@@ -129,7 +129,6 @@ rf_viewport_update(mrb_state *mrb, rf_viewport *viewport)
 {
   int w = (int)viewport->rect->width;
   int h = (int)viewport->rect->height;
-  if (!w || !h || !viewport->visible) return;
   if (viewport->render.texture.width != w || viewport->render.texture.height != h)
   {
     rf_unload_render_texture(viewport->render);
@@ -155,8 +154,7 @@ rf_viewport_draw(mrb_state *mrb, rf_viewport *viewport)
   int y = (int)viewport->rect->y;
   int w = (int)viewport->rect->width;
   int h = (int)viewport->rect->height;
-  if (!w || !h || !viewport->visible) return;
-
+  if (!w || !h) return;
 
   rf_color color = *(viewport->color);
   rf_gfx_enable_texture(viewport->render.texture.id);
@@ -198,7 +196,7 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
   DATA_TYPE(self) = &mrb_viewport_data_type;
   DATA_PTR(self) = data;
   mrb_container_init(mrb, &(data->base));
-  data->visible = TRUE;
+  data->base.base.visible = TRUE;
   data->base.base.update = (rf_drawable_update_callback)rf_viewport_update;
   data->base.base.draw   = (rf_drawable_draw_callback)rf_viewport_draw;
   rf_container *c = mrb_get_graphics_container(mrb);
@@ -315,7 +313,7 @@ static mrb_value
 viewport_get_visible(mrb_state *mrb, mrb_value self)
 {
   rf_viewport *view = mrb_get_viewport(mrb, self);
-  return mrb_bool_value(view->visible);
+  return mrb_bool_value(view->base.base.visible);
 }
 
 static mrb_value
@@ -324,7 +322,7 @@ viewport_set_visible(mrb_state *mrb, mrb_value self)
   mrb_bool value;
   rf_viewport *view = mrb_get_viewport(mrb, self);
   mrb_get_args(mrb, "b", &value); 
-  view->visible = value;
+  view->base.base.visible = value;
   return mrb_bool_value(value);
 }
 
