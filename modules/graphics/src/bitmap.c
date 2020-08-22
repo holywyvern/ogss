@@ -22,7 +22,7 @@ static const char *IMAGE_EXTENSIONS[] = {
 };
 
 static void
-bitmap_free(mrb_state *mrb, void *ptr)
+free_bitmap(mrb_state *mrb, void *ptr)
 {
   if (ptr)
   {
@@ -34,7 +34,7 @@ bitmap_free(mrb_state *mrb, void *ptr)
 }
 
 const struct mrb_data_type mrb_bitmap_data_type = {
-  "Bitmap", bitmap_free
+  "Bitmap", free_bitmap
 };
 
 static mrb_value
@@ -249,6 +249,22 @@ bitmap_s_white_noise(mrb_state *mrb, mrb_value self)
   return result;
 }
 
+static mrb_value
+bitmap_disposedQ(mrb_state *mrb, mrb_value self)
+{
+  return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
+}
+
+static mrb_value
+bitmap_dispose(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  free_bitmap(mrb, bmp);
+  DATA_PTR(self) = NULL;
+  return mrb_nil_value();
+}
+
+
 void
 mrb_init_ogss_bitmap(mrb_state *mrb)
 {
@@ -261,6 +277,9 @@ mrb_init_ogss_bitmap(mrb_state *mrb)
   mrb_define_method(mrb, bitmap, "rect", bitmap_rect, MRB_ARGS_NONE());
   mrb_define_method(mrb, bitmap, "width", bitmap_get_width, MRB_ARGS_NONE());
   mrb_define_method(mrb, bitmap, "height", bitmap_get_height, MRB_ARGS_NONE());
+
+  mrb_define_method(mrb, bitmap, "disposed?", bitmap_disposedQ, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "dispose", bitmap_dispose, MRB_ARGS_NONE());
 
   mrb_define_class_method(mrb, bitmap, "cellular", bitmap_s_cellular, MRB_ARGS_ANY());
   mrb_define_class_method(mrb, bitmap, "checked", bitmap_s_checked, MRB_ARGS_ANY());

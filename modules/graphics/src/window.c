@@ -332,6 +332,37 @@ static void
 draw_arrows(rf_window *window)
 {
   if (!window->arrows_visible) return;
+  if (!window->contents) return;
+
+  rf_vec2 origin = (rf_vec2){ 0, 0 };
+  rf_color color = (rf_color){ 255, 255, 255, window->opacity };
+
+  if (window->offset->x > 0)
+  {
+    rf_rec src = window->skin_rects.arrows.left;
+    rf_rec dst = (rf_rec){ src.width / 2, (window->rect->height - src.height) / 2, src.width, src.height };
+    rf_draw_texture_region(window->skin->texture, src, dst, origin, 0, color);
+  }
+  if (window->offset->y > 0)
+  {
+    rf_rec src = window->skin_rects.arrows.top;
+    rf_rec dst = (rf_rec){ (window->rect->width - src.width) / 2, src.height / 2, src.width, src.height };
+    rf_draw_texture_region(window->skin->texture, src, dst, origin, 0, color);
+  }
+  int lw = window->contents->texture.width - window->rect->width + window->padding.left + window->padding.right;
+  if (window->offset->x < lw)
+  {
+    rf_rec src = window->skin_rects.arrows.right;
+    rf_rec dst = (rf_rec){ window->rect->width - src.width * 3 / 2, (window->rect->height - src.height) / 2, src.width, src.height };
+    rf_draw_texture_region(window->skin->texture, src, dst, origin, 0, color);
+  }
+  int lh = window->contents->texture.height - window->rect->height + window->padding.top + window->padding.bottom;
+  if (window->offset->y < lh)
+  {
+    rf_rec src = window->skin_rects.arrows.bottom;
+    rf_rec dst = (rf_rec){ (window->rect->width - src.width) / 2, window->rect->height - src.height * 3 / 2, src.width, src.height };
+    rf_draw_texture_region(window->skin->texture, src, dst, origin, 0, color);
+  }
 }
 
 static void
@@ -471,7 +502,7 @@ window_initialize(mrb_state *mrb, mrb_value self)
   window->base.update = (rf_drawable_update_callback)update_window;
   window->base.draw = (rf_drawable_draw_callback)draw_window;
   window->active = TRUE;
-  window->arrows_visible = FALSE;
+  window->arrows_visible = TRUE;
   window->contents = NULL;
   window->contents_opacity = 255;
   window->cursor_opacity   = 255;
@@ -648,56 +679,56 @@ set_skin_rects(rf_window *window, rf_bitmap *skin)
 {
   float w = skin->texture.width;
   float h = skin->texture.height;
-  float x = w / 24;
-  float y = h / 24;
+  float x = w / 16;
+  float y = h / 16;
+  float x2 = x * 2;
+  float y2 = y * 2;  
   float x3 = x * 3;
   float y3 = y * 3;
-  float hw = w / 2;
-  float hh = h / 2;
-  float x3_2 = x * 3 / 2;
-  float y3_2 = y * 3 / 2;
-  float x4 = x * 3;
+  float x4 = x * 4;
   float y4 = y * 4;
+  float x5 = x * 5;
+  float y5 = y * 5;
   float x6 = x * 6;
   float y6 = y * 6;
-  float x9 = x * 9;
-  float y9 = y * 9;
+  float hw = w / 2;
+  float hh = h / 2;
 
   // backgrounds
   window->skin_rects.backgrounds[0] = (rf_rec){0,  0, hw, hh};
   window->skin_rects.backgrounds[1] = (rf_rec){0, hh, hw, hh};
 
   // window arrows
-  window->skin_rects.arrows.top    = (rf_rec){       hw + x4,             y3,    x4, y3_2 };
-  window->skin_rects.arrows.bottom = (rf_rec){       hw + x4, hh - y3 - y3_2,    x4, y3_2 };
-  window->skin_rects.arrows.left   = (rf_rec){       hw + x3,             y3,  x3_2,   y4 };
-  window->skin_rects.arrows.right  = (rf_rec){ w - x3 - x3_2,             y3,  x3_2,   y4 };
+  window->skin_rects.arrows.top    = (rf_rec){ hw + x3, y2, x2, y };
+  window->skin_rects.arrows.bottom = (rf_rec){ hw + x3, y5, x2, y };
+  window->skin_rects.arrows.left   = (rf_rec){ hw + x2, y3, x, y2 };
+  window->skin_rects.arrows.right  = (rf_rec){ hw + x5, y3, x, y2 };
 
   // skin borders
-  window->skin_rects.borders.top_left      = (rf_rec){      hw,       0, x3, y3 };
-  window->skin_rects.borders.top_right     = (rf_rec){  w - x3,       0, x3, y3 };
-  window->skin_rects.borders.bottom_left   = (rf_rec){      hw, hh - x3, x3, y3 };
-  window->skin_rects.borders.bottom_right  = (rf_rec){  w - x3, hh - x3, x3, y3 };
-  window->skin_rects.borders.top           = (rf_rec){ hw + x3,       0, x6, y3 };
-  window->skin_rects.borders.bottom        = (rf_rec){ hw + x3, hh - x3, x6, y3 };
-  window->skin_rects.borders.left          = (rf_rec){      hw,      x3, x3, y6 };
-  window->skin_rects.borders.right         = (rf_rec){  w - x3,      x3, x3, y6 };
+  window->skin_rects.borders.top_left      = (rf_rec){      hw,  0, x2, y2 };
+  window->skin_rects.borders.top_right     = (rf_rec){  w - x2,  0, x2, y2 };
+  window->skin_rects.borders.bottom_right  = (rf_rec){  w - x2, x6, x2, y2 };
+  window->skin_rects.borders.bottom_left   = (rf_rec){      hw, x6, x2, y2 };
+  window->skin_rects.borders.top           = (rf_rec){ hw + x2, 0,  x4, y2 };
+  window->skin_rects.borders.bottom        = (rf_rec){ hw + x2, x6, x4, y2 };
+  window->skin_rects.borders.left          = (rf_rec){      hw, x2, x2, y4 };
+  window->skin_rects.borders.right         = (rf_rec){  w - x2, x2, x2, y4 };
   window->skin_rects.border_left           = x / 2;
   window->skin_rects.border_top            = y / 2;
 
   // command cursor
   window->skin_rects.cursor.type = RF_NPT_9PATCH;
-  window->skin_rects.cursor.top = x / 2;
-  window->skin_rects.cursor.bottom = x / 2;
-  window->skin_rects.cursor.left = x / 2;
-  window->skin_rects.cursor.right = x / 2;
-  window->skin_rects.cursor.source_rec = (rf_rec){ hw, hh, x6, y6 };
+  window->skin_rects.cursor.top = y;
+  window->skin_rects.cursor.bottom = y;
+  window->skin_rects.cursor.left = x;
+  window->skin_rects.cursor.right = x;
+  window->skin_rects.cursor.source_rec = (rf_rec){ hw, hh, x4, y4 };
 
   // pause cursor
-  window->skin_rects.pause[0] = (rf_rec){ hw + x6,      hh, x3, y3 };
-  window->skin_rects.pause[1] = (rf_rec){ hw + x9,      hh, x3, y3 };
-  window->skin_rects.pause[2] = (rf_rec){ hw + x6, hh + y3, x3, y3 };
-  window->skin_rects.pause[3] = (rf_rec){ hw + x9, hh + y3, x3, y3 };
+  window->skin_rects.pause[0] = (rf_rec){ hw + x4,      hh, x2, y2 };
+  window->skin_rects.pause[1] = (rf_rec){ hw + x6,      hh, x2, y2 };
+  window->skin_rects.pause[2] = (rf_rec){ hw + x4, hh + y2, x2, y2 };
+  window->skin_rects.pause[3] = (rf_rec){ hw + x6, hh + y2, x2, y2 };
 }
 
 static mrb_value
@@ -739,7 +770,7 @@ window_set_contents(mrb_state *mrb, mrb_value self)
   }
   if (!mrb_bitmap_p(contents_value)) mrb_raise(mrb, E_ARGUMENT_ERROR, "value is not a Bitmap.");
   window->contents = mrb_get_bitmap(mrb, contents_value);
-  mrb_iv_set(mrb, self, SKIN, contents_value);
+  mrb_iv_set(mrb, self, CONTENTS, contents_value);
   return contents_value;
 }
 
@@ -792,6 +823,23 @@ window_set_pause(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "b", &value);
   window->pause = value;
   return mrb_bool_value(window->pause);
+}
+
+static mrb_value
+window_get_arrows_visible(mrb_state *mrb, mrb_value self)
+{
+  rf_window *window = mrb_get_window(mrb, self);
+  return mrb_bool_value(window->arrows_visible);
+}
+
+static mrb_value
+window_set_arrows_visible(mrb_state *mrb, mrb_value self)
+{
+  mrb_bool value;
+  rf_window *window = mrb_get_window(mrb, self);
+  mrb_get_args(mrb, "b", &value);
+  window->arrows_visible = value;
+  return mrb_bool_value(window->arrows_visible);
 }
 
 static mrb_value
@@ -863,6 +911,11 @@ mrb_init_ogss_window(mrb_state *mrb)
   mrb_define_method(mrb, window, "visible", window_get_visible, MRB_ARGS_NONE());
   mrb_define_method(mrb, window, "visible?", window_get_visible, MRB_ARGS_NONE());
   mrb_define_method(mrb, window, "visible=", window_set_visible, MRB_ARGS_REQ(1));
+
+  mrb_define_method(mrb, window, "arrows_visible", window_get_arrows_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "arrows_visible?", window_get_arrows_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "arrows_visible=", window_set_arrows_visible, MRB_ARGS_REQ(1));
+
 
   mrb_define_method(mrb, window, "pause", window_get_pause, MRB_ARGS_NONE());
   mrb_define_method(mrb, window, "pause?", window_get_pause, MRB_ARGS_NONE());
