@@ -58,8 +58,8 @@ draw_cursor(rf_window *window)
     255, 255, 255, (unsigned char)(window->opacity * window->cursor_opacity / 255)
   };
   rf_rec dst = *(window->cursor_rect);
-  dst.x += window->padding.left - window->skin_rects.border_left;
-  dst.y += window->padding.top - window->skin_rects.border_top;
+  dst.x += window->padding.left - window->skin_rects.border_left - window->offset->x;
+  dst.y += window->padding.top - window->skin_rects.border_top - window->offset->y;
   rf_draw_texture_npatch(
     window->skin->texture, window->skin_rects.cursor, dst,
     (rf_vec2){0, 0}, 0, color
