@@ -541,6 +541,8 @@ window_initialize(mrb_state *mrb, mrb_value self)
   window->pause_frame = 0;
   window->pause_count = 0;
   window->cursor_opacity = 55;
+  window->skin_rects.border_left = 0;
+  window->skin_rects.border_top = 0;
   mrb_int argc = mrb_get_argc(mrb);
   mrb_iv_set(mrb, self, CURSOR_RECT, cursor_rect);
   mrb_iv_set(mrb, self, OFFSET, offset);
@@ -762,6 +764,8 @@ window_set_skin(mrb_state *mrb, mrb_value self)
   if (mrb_nil_p(skin_value))
   {
     window->skin = NULL;
+    window->skin_rects.border_left = 0;
+    window->skin_rects.border_top = 0;    
     mrb_iv_set(mrb, self, SKIN, skin_value);
     return skin_value;
   }
