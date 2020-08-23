@@ -34,6 +34,13 @@ mrb_get_font(mrb_state *mrb, mrb_value obj)
   return font;
 }
 
+static inline mrb_value
+mrb_new_default_font(mrb_state *mrb)
+{
+  struct RClass *font = mrb_class_get(mrb, "Font");
+  return mrb_obj_new(mrb, font, 0, NULL);
+}
+
 #ifdef __cplusplus
 }
 #endif

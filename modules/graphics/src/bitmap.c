@@ -12,6 +12,8 @@
 #include <ogss/file.h>
 #include <ogss/rect.h>
 
+#define FONT mrb_intern_lit(mrb, "#font")
+
 static const char *IMAGE_EXTENSIONS[] = {
   "",
   ".png",
@@ -75,6 +77,9 @@ bitmap_initialize(mrb_state *mrb, mrb_value self)
   bmp->image = img;
   bmp->texture = rf_load_texture_from_image(img);
   bmp->dirty = FALSE;
+  mrb_value font = mrb_new_default_font(mrb);
+  mrb_iv_set(mrb, self, FONT, font);
+  bmp->font = mrb_get_font(mrb, font);
   DATA_TYPE(self) = &mrb_bitmap_data_type;
   DATA_PTR(self) = bmp;
   return mrb_nil_value();
@@ -264,6 +269,117 @@ bitmap_dispose(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+static mrb_value
+bitmap_blt(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_stretch_blt(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_fill_rect(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_gradient_fill_rect(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_clear(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_clear_rect(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_get_pixel(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_set_pixel(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_hue_change(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_blur(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_radial_blur(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_draw_text(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_text_size(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  return mrb_nil_value();
+}
+
+static mrb_value
+bitmap_get_font(mrb_state *mrb, mrb_value self)
+{
+  return mrb_iv_get(mrb, self, FONT);
+}
+
+static mrb_value
+bitmap_set_font(mrb_state *mrb, mrb_value self)
+{
+  rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
+  mrb_value font;
+  mrb_get_args(mrb, "o", &font);
+  if (!mrb_font_p(font))
+  {
+    mrb_raise(mrb, E_ARGUMENT_ERROR, "value is not a Font.");
+  }
+  mrb_iv_set(mrb, self, FONT, font);
+  bmp->font = mrb_get_font(mrb, font);
+  return mrb_nil_value();
+}
 
 void
 mrb_init_ogss_bitmap(mrb_state *mrb)
@@ -278,8 +394,27 @@ mrb_init_ogss_bitmap(mrb_state *mrb)
   mrb_define_method(mrb, bitmap, "width", bitmap_get_width, MRB_ARGS_NONE());
   mrb_define_method(mrb, bitmap, "height", bitmap_get_height, MRB_ARGS_NONE());
 
+  mrb_define_method(mrb, bitmap, "font", bitmap_get_font, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "font=", bitmap_set_font, MRB_ARGS_REQ(1));
+
   mrb_define_method(mrb, bitmap, "disposed?", bitmap_disposedQ, MRB_ARGS_NONE());
   mrb_define_method(mrb, bitmap, "dispose", bitmap_dispose, MRB_ARGS_NONE());
+
+  mrb_define_method(mrb, bitmap, "block_transfer", bitmap_blt, MRB_ARGS_REQ(4)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "blt", bitmap_blt, MRB_ARGS_REQ(4)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "stretch_blt", bitmap_stretch_blt, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "fill_rect", bitmap_fill_rect, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(2));
+  mrb_define_method(mrb, bitmap, "gradient_fill_rect", bitmap_gradient_fill_rect, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, bitmap, "clear", bitmap_clear, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "clear_rect", bitmap_clear_rect, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(3));
+  mrb_define_method(mrb, bitmap, "get_pixel", bitmap_get_pixel, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "set_pixel", bitmap_set_pixel, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "hue_change", bitmap_hue_change, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "change_hue", bitmap_hue_change, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "blur", bitmap_blur, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "radial_blur", bitmap_radial_blur, MRB_ARGS_REQ(2));
+  mrb_define_method(mrb, bitmap, "draw_text", bitmap_draw_text, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, bitmap, "text_size", bitmap_text_size, MRB_ARGS_REQ(1));
 
   mrb_define_class_method(mrb, bitmap, "cellular", bitmap_s_cellular, MRB_ARGS_ANY());
   mrb_define_class_method(mrb, bitmap, "checked", bitmap_s_checked, MRB_ARGS_ANY());

@@ -19,6 +19,7 @@ struct rf_bitmap
 {
   rf_image     image;
   rf_texture2d texture;
+  rf_font     *font;
   mrb_bool     dirty;
 };
 
