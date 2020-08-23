@@ -629,6 +629,12 @@ window_get_tone(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+window_get_padding(mrb_state *mrb, mrb_value self)
+{
+  return mrb_iv_get(mrb, self, PADDING);
+}
+
+static mrb_value
 window_disposedQ(mrb_state *mrb, mrb_value self)
 {
   return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
@@ -916,6 +922,7 @@ mrb_init_ogss_window(mrb_state *mrb)
   mrb_define_method(mrb, window, "offset", window_get_offset, MRB_ARGS_NONE());
   mrb_define_method(mrb, window, "rect", window_get_rect, MRB_ARGS_NONE());
   mrb_define_method(mrb, window, "tone", window_get_tone, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "padding", window_get_padding, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, window, "disposed?", window_disposedQ, MRB_ARGS_NONE());
   mrb_define_method(mrb, window, "dispose", window_dispose, MRB_ARGS_NONE());
