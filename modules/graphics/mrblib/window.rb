@@ -4,6 +4,12 @@ class Window
   delegate :x, :y, :width, :height, :x=, :y=, :width=, :height=, to: :rect
   delegate :x, :y, :x=, :y=, to: :offset, prefix: true
 
+  class Padding
+    def inspect
+      "Padding(#{top}, #{bottom}, #{left}, #{right})"
+    end
+  end
+
   def ox
     offset.x
   end
