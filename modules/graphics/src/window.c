@@ -143,6 +143,60 @@ bind_shader(rf_window *window)
   rf_gfx_set_shader_value(window_shader, shader_locations.tone, tone, RF_UNIFORM_VEC4);
 }
 
+static inline void
+draw_window_background(rf_window *window, int w, int h)
+{
+  if (!window->skin) return;
+  rf_color color = (rf_color){
+    255, 255, 255, (unsigned char)(window->opacity * window->back_opacity / 255)
+  };
+  rf_vec2 origin = *(window->offset);
+  rf_rec src = window->skin_rects.backgrounds[0];
+  rf_rec dst = (rf_rec){0, 0, w, h};
+
+  mrb_refresh_bitmap(window->skin);
+  rf_texture2d texture = window->skin->texture;
+  rf_begin_shader(window_shader);
+    bind_shader(window);        
+    rf_draw_texture_region(texture, src, dst, (rf_vec2){0, 0}, 0, color);
+  rf_end_shader();
+  src = window->skin_rects.backgrounds[1];
+  int tx = w / src.width  + 1;
+  int ty = h / src.height + 1;
+  for (int y = 0; y < ty; ++y)
+  {
+    for (int x = 0; x < tx; ++x)
+    {
+      rf_rec dst2 = (rf_rec){ x * src.width, y * src.height, src.width, src.height };
+      rf_draw_texture_region(texture, src, dst2, (rf_vec2){0, 0}, 0, color);
+    }
+  }
+}
+
+static inline void
+draw_window_contents(rf_window *window)
+{
+  if (!window->contents) return;
+
+  mrb_refresh_bitmap(window->contents);
+  rf_color color = (rf_color){255, 255, 255, (unsigned char)(window->opacity * window->contents_opacity / 255)};
+  int w2 = window->contents->texture.width - window->offset->x;
+  int h2 = window->contents->texture.height - window->offset->y;
+  int b = window->rect->width - window->padding.left - window->padding.right;
+  w2 = min(w2, b);
+  b = window->rect->height - window->padding.top - window->padding.bottom;
+  h2 = min(h2, b);
+  if (w2 <= 0 || h2 <= 0) return; 
+
+  rf_rec src = (rf_rec){ window->offset->x, window->offset->y, w2, h2 };
+  rf_rec dst = (rf_rec){
+    window->padding.left  - window->skin_rects.border_left,
+    window->padding.top - window->skin_rects.border_top,
+    w2, h2
+  };
+  rf_draw_texture_region(window->contents->texture, src, dst, (rf_vec2){0, 0}, 0, color);      
+}
+
 static void
 update_window(mrb_state *mrb, rf_window *window)
 {
@@ -156,46 +210,14 @@ update_window(mrb_state *mrb, rf_window *window)
     window->render.id = 0;
     if (w && h) window->render = rf_load_render_texture(w, h);
   }
-  rf_rec src = window->skin_rects.backgrounds[0];
-  rf_rec dst = (rf_rec){0, 0, w, h};
-  rf_color color = (rf_color){255, 255, 255, (unsigned char)(window->opacity * window->back_opacity / 255)};
-  rf_vec2 origin = *(window->offset);
+
   rf_gfx_push_matrix();
   rf_begin_render_to_texture(window->render);
     rf_clear(RF_BLANK);
     rf_begin_blend_mode(RF_BLEND_ALPHA);
-      if (window->skin)
-      {
-        mrb_refresh_bitmap(window->skin);
-        rf_texture2d texture = window->skin->texture;
-        rf_begin_shader(window_shader);
-          bind_shader(window);        
-          rf_draw_texture_region(texture, src, dst, (rf_vec2){0, 0}, 0, color);
-        rf_end_shader();
-        src = window->skin_rects.backgrounds[1];
-        int tx = w / src.width  + 1;
-        int ty = h / src.height + 1;
-        for (int y = 0; y < ty; ++y)
-        {
-          for (int x = 0; x < tx; ++x)
-          {
-            rf_rec dst2 = (rf_rec){ x * src.width, y * src.height, src.width, src.height };
-            rf_draw_texture_region(texture, src, dst2, (rf_vec2){0, 0}, 0, color);
-          }
-        }
-      }
+      draw_window_background(window, w, h);
+      draw_window_contents(window);
       draw_cursor(window);
-      if (window->contents)
-      {
-        mrb_refresh_bitmap(window->contents);
-        rf_color color = (rf_color){255, 255, 255, (unsigned char)(window->opacity * window->contents_opacity / 255)};
-        int w2 = w - (window->padding.left + window->padding.right);
-        int h2 = h - (window->padding.top + window->padding.bottom);
-        if (w2 <= 0 || h2 <= 0) return;
-        src = (rf_rec){ window->offset->x, window->offset->y, w2, h2 };
-        dst = (rf_rec){ window->padding.left, window->padding.top, w2, h2 };
-        rf_draw_texture_region(window->contents->texture, src, dst, (rf_vec2){0, 0}, 0, color);
-      }
     rf_end_blend_mode();
   rf_end_render_to_texture();
   rf_gfx_pop_matrix();
