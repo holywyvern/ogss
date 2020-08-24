@@ -198,6 +198,8 @@ mrb_graphics_fadeout(mrb_state *mrb, mrb_value self)
 #define GL_RGBA 0x1908
 #define GL_UNSIGNED_BYTE 0x1401
 
+#define rf_gl (rf_get_context()->gfx_ctx.gl)
+
 static mrb_value
 mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
 {
@@ -206,10 +208,10 @@ mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
   config->is_frozen = TRUE;
   size_t size = config->width * config->height;
   rf_color *buffer = mrb_malloc(mrb, size * sizeof *buffer);
-  rf_get_context()->gfx_ctx.gl.ReadPixels(0, 0, config->width, config->height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+  rf_gl.ReadPixels(0, 0, config->width, config->height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
   for (size_t i = 0; i < size; ++i)
   {
-    buffer[i].a = 1; // remove transparency
+    buffer[i].a = 255; // remove transparency
   }
   rf_image image;
   image.data   = buffer;
@@ -251,10 +253,89 @@ static const float corners[4][2] = {
   { 1, 1 }          
 };
 
+static rf_shader transition_shader;
+
+static struct
+{
+  int transition_texture, left;
+} transition_shader_locations;
+
+static mrb_bool transition_shader_init = FALSE;
+
+static const char *transition_frag =
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+  "#version 100\n"
+  "precision mediump float;"
+  "varying vec2 frag_tex_coord;"
+  "varying vec4 frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+  "#version 330\n"
+  "precision mediump float;"
+  "in vec2 frag_tex_coord;"
+  "in vec4 frag_color;"
+  "out vec4 final_color;"
+#endif
+  "uniform sampler2D texture0;"
+  "uniform sampler2D transition;"
+  "uniform float left;"
+  "uniform vec4 col_diffuse;"
+  "void main()"
+  "{"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+  "    vec4 tt = texture2D(transition, frag_tex_coord);"
+  "    vec4 texel_color = texture2D(texture0, frag_tex_coord);"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+  "    vec4 tt = texture(transition, frag_tex_coord);"
+  "    vec4 texel_color = texture(texture0, frag_tex_coord);"
+#endif
+  "    float gray = (0.3 * tt.r) + (0.59 * tt.g) + (0.11 * tt.b);"
+  "    if (gray <= left) texel_color.a = 0;"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+  "    frag_color = texel_color*col_diffuse*frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+  "    final_color = texel_color*col_diffuse*frag_color;"
+#endif
+"}";
+
+static inline void
+init_transition_shader()
+{
+  if (!transition_shader_init)
+  {
+    transition_shader = rf_gfx_load_shader(NULL, transition_frag);
+    transition_shader_locations.left = rf_gfx_get_shader_location(transition_shader, "left");
+    transition_shader_locations.transition_texture = rf_gfx_get_shader_location(transition_shader, "transition");
+    transition_shader_init = true;
+  }
+}
+
+static inline void
+bind_transition_shader(rf_texture2d texture, float left)
+{
+  rf_gfx_set_shader_value(
+    transition_shader, transition_shader_locations.left, &left, RF_UNIFORM_FLOAT
+  );
+}
+
+#define GL_TEXTURE0 0x84C0
+#define GL_TEXTURE2 0x84C2
+#define GL_TEXTURE_2D 0x0DE1
+
 static void
-draw_screen(rf_texture2d tex, rf_color color)
+draw_screen(rf_texture2d tex, rf_color color, rf_texture2d *texture)
 {
   rf_gfx_enable_texture(tex.id);
+  // TODO: Fix image transition not actually working
+  if (texture)
+  {
+    rf_gl.ActiveTexture(GL_TEXTURE0 + 1);
+    rf_gl.BindTexture(GL_TEXTURE_2D, texture->id);    
+    rf_gl.ActiveTexture(GL_TEXTURE2);
+    rf_gl.BindTexture(GL_TEXTURE_2D, texture->id);
+    rf_gfx_set_shader_value_texture(
+      transition_shader, transition_shader_locations.transition_texture, *texture
+    );
+  }
   rf_gfx_push_matrix();
     rf_gfx_begin(RF_QUADS);
       rf_gfx_color4ub(color.a, color.g, color.b, color.a);
@@ -296,78 +377,13 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
   {
     tex = config->render_texture.texture;
   }
-  draw_screen(tex, (rf_color){255, 255, 255, config->brightness});
+  draw_screen(tex, (rf_color){255, 255, 255, config->brightness}, 0);
   rf_end();
   config->frame_count += 1;  
   return mrb_nil_value();
 }
 
-rf_shader transition_shader;
 
-static struct
-{
-  int transition_texture, left;
-} transition_shader_locations;
-
-static mrb_bool transition_shader_init = FALSE;
-
-static const char *transition_frag =
-#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
-  "#version 100\n"
-  "precision mediump float;"
-  "varying vec2 frag_tex_coord;"
-  "varying vec4 frag_color;"
-#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
-  "#version 330\n"
-  "precision mediump float;"
-  "in vec2 frag_tex_coord;"
-  "in vec4 frag_color;"
-  "out vec4 final_color;"
-#endif
-  "uniform sampler2D texture0;"
-  "uniform sampler2D texture1;"
-  "uniform float left;"
-  "uniform vec4 col_diffuse;"
-  "void main()"
-  "{"
-#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
-  "    vec4 tt = texture2D(texture1, frag_tex_coord);"
-  "    vec4 texel_color = texture2D(texture0, frag_tex_coord);"
-#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
-  "    vec4 tt = texture(texture1, frag_tex_coord);"
-  "    vec4 texel_color = texture(texture0, frag_tex_coord);"
-#endif
-  "    float gray = (0.3 * tt.r) + (0.59 * tt.g) + (0.11 * tt.b);"
-  "    texel_color.a = (1 - gray) * left;"
-#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
-  "    frag_color = texel_color*col_diffuse*frag_color;"
-#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
-  "    final_color = texel_color*col_diffuse*frag_color;"
-#endif
-"}";
-
-static inline void
-init_transition_shader()
-{
-  if (!transition_shader_init)
-  {
-    transition_shader = rf_gfx_load_shader(NULL, transition_frag);
-    transition_shader_locations.left = rf_gfx_get_shader_location(transition_shader, "left");
-    transition_shader_locations.transition_texture = rf_gfx_get_shader_location(transition_shader, "texture1");
-    transition_shader_init = true;
-  }
-}
-
-static inline void
-bind_transition_shader(rf_texture2d texture, float left)
-{
-  rf_gfx_set_shader_value(
-    transition_shader, transition_shader_locations.left, &left, RF_UNIFORM_FLOAT
-  );
-  rf_gfx_set_shader_value_texture(
-    transition_shader, transition_shader_locations.transition_texture, texture
-  );
-}
 
 static mrb_value
 mrb_graphics_transition(mrb_state *mrb, mrb_value self)
@@ -398,14 +414,13 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
         dt -= config->dt;
         if (dt < 0) dt = 0;
         float left = (float)(dt / duration);
-        // TODO: Fix image transition not actually working
         rf_begin();
           rf_clear(RF_BLANK);
           rf_begin_blend_mode(RF_BLEND_ALPHA);
-            draw_screen(config->render_texture.texture, RF_RAYWHITE);
+            draw_screen(config->render_texture.texture, RF_RAYWHITE, 0);
             rf_begin_shader(transition_shader);
-              bind_transition_shader(transition_texture, left);
-              draw_screen(config->frozen_img, RF_RAYWHITE);
+              bind_transition_shader(transition_texture, 1.0f - left);
+              draw_screen(transition_texture, RF_RAYWHITE, &transition_texture);
             rf_end_shader();
           rf_end_blend_mode();
         rf_end();
@@ -420,12 +435,12 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
       {
         dt -= config->dt;
         if (dt < 0) dt = 0;
-        draw_screen(config->render_texture.texture, (rf_color){255, 255, 255, config->brightness});
+        draw_screen(config->render_texture.texture, (rf_color){255, 255, 255, config->brightness}, 0);
         mrb_int left = (mrb_int)(255 * dt / duration);
         mrb_int bg = config->brightness * left / 255;
         rf_begin();
         rf_begin_blend_mode(RF_BLEND_ALPHA);
-          draw_screen(config->frozen_img, (rf_color){255, 255, 255, bg});
+          draw_screen(config->frozen_img, (rf_color){255, 255, 255, bg}, 0);
         rf_end_blend_mode();
         rf_end();
         mrb_graphics_frame_reset(mrb, self);
@@ -520,7 +535,6 @@ mrb_config_initialize(mrb_state *mrb, mrb_value self)
   config->frame_count = 0;
   config->brightness = 255;
   config->is_open = 0;
-  config->context = (rf_context){0};
   config->is_frozen = 0;
   config->data = NULL;
   mrb_container_init(mrb, &(config->container));
@@ -578,8 +592,9 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   gladLoadGL();
   config->data = RF_DEFAULT_GFX_BACKEND_INIT_DATA;
 #endif
-  config->context = (rf_context){0};
   rf_init_context(&(config->context));
+  config->context.logger_filter = RF_LOG_TYPE_ALL;
+  config->context.logger = RF_DEFAULT_LOGGER;
   rf_init_gfx((int)config->width, (int)config->height, config->data);
   init_transition_shader();
   rf_allocator alloc = mrb_get_allocator(mrb);
