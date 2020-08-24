@@ -416,7 +416,7 @@ new_padding(mrb_state *mrb, mrb_value self, rf_window_padding *padding)
 }
 
 static mrb_value
-padding_initialize(mrb_state *mrb, mrb_value self)
+mrb_padding_initialize(mrb_state *mrb, mrb_value self)
 {
   mrb_value window;
   mrb_get_args(mrb, "o", &window);
@@ -427,7 +427,7 @@ padding_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_get_top(mrb_state *mrb, mrb_value self)
+mrb_padding_get_top(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -435,7 +435,7 @@ padding_get_top(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_get_bottom(mrb_state *mrb, mrb_value self)
+mrb_padding_get_bottom(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -443,7 +443,7 @@ padding_get_bottom(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_get_left(mrb_state *mrb, mrb_value self)
+mrb_padding_get_left(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -451,7 +451,7 @@ padding_get_left(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_get_right(mrb_state *mrb, mrb_value self)
+mrb_padding_get_right(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -459,7 +459,7 @@ padding_get_right(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_set_top(mrb_state *mrb, mrb_value self)
+mrb_padding_set_top(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -470,7 +470,7 @@ padding_set_top(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_set_bottom(mrb_state *mrb, mrb_value self)
+mrb_padding_set_bottom(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -481,7 +481,7 @@ padding_set_bottom(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_set_left(mrb_state *mrb, mrb_value self)
+mrb_padding_set_left(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -492,7 +492,7 @@ padding_set_left(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-padding_set_right(mrb_state *mrb, mrb_value self)
+mrb_padding_set_right(mrb_state *mrb, mrb_value self)
 {
   mrb_get_window(mrb, mrb_iv_get(mrb, self, WINDOW));
   rf_window_padding *padding = (rf_window_padding *)DATA_PTR(self);
@@ -503,7 +503,7 @@ padding_set_right(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_initialize(mrb_state *mrb, mrb_value self)
+mrb_window_initialize(mrb_state *mrb, mrb_value self)
 {
   if (!shader_ready)
   {
@@ -605,43 +605,43 @@ window_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_cursor_rect(mrb_state *mrb, mrb_value self)
+mrb_window_get_cursor_rect(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, CURSOR_RECT);
 }
 
 static mrb_value
-window_get_offset(mrb_state *mrb, mrb_value self)
+mrb_window_get_offset(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, OFFSET);
 }
 
 static mrb_value
-window_get_rect(mrb_state *mrb, mrb_value self)
+mrb_window_get_rect(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, RECT);
 }
 
 static mrb_value
-window_get_tone(mrb_state *mrb, mrb_value self)
+mrb_window_get_tone(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, TONE);
 }
 
 static mrb_value
-window_get_padding(mrb_state *mrb, mrb_value self)
+mrb_window_get_padding(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, PADDING);
 }
 
 static mrb_value
-window_disposedQ(mrb_state *mrb, mrb_value self)
+mrb_window_disposedQ(mrb_state *mrb, mrb_value self)
 {
   return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
 }
 
 static mrb_value
-window_dispose(mrb_state *mrb, mrb_value self)
+mrb_window_dispose(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   free_window(mrb, window);
@@ -650,14 +650,14 @@ window_dispose(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_z(mrb_state *mrb, mrb_value self)
+mrb_window_get_z(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   return mrb_fixnum_value(window->base.z);
 }
 
 static mrb_value
-window_set_z(mrb_state *mrb, mrb_value self)
+mrb_window_set_z(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_window *window = mrb_get_window(mrb, self);
@@ -671,13 +671,13 @@ window_set_z(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_viewport(mrb_state *mrb, mrb_value self)
+mrb_window_get_viewport(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, VIEWPORT);
 }
 
 static mrb_value
-window_set_viewport(mrb_state *mrb, mrb_value self)
+mrb_window_set_viewport(mrb_state *mrb, mrb_value self)
 {
   mrb_value parent_value;
   mrb_get_args(mrb, "o", &parent_value);
@@ -699,7 +699,7 @@ window_set_viewport(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_skin(mrb_state *mrb, mrb_value self)
+mrb_window_get_skin(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, SKIN);
 }
@@ -762,7 +762,7 @@ set_skin_rects(rf_window *window, rf_bitmap *skin)
 }
 
 static mrb_value
-window_set_skin(mrb_state *mrb, mrb_value self)
+mrb_window_set_skin(mrb_state *mrb, mrb_value self)
 {
   mrb_value skin_value;
   mrb_get_args(mrb, "o", &skin_value);
@@ -783,13 +783,13 @@ window_set_skin(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_contents(mrb_state *mrb, mrb_value self)
+mrb_window_get_contents(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, CONTENTS);
 }
 
 static mrb_value
-window_set_contents(mrb_state *mrb, mrb_value self)
+mrb_window_set_contents(mrb_state *mrb, mrb_value self)
 {
   mrb_value contents_value;
   mrb_get_args(mrb, "o", &contents_value);
@@ -807,14 +807,14 @@ window_set_contents(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_visible(mrb_state *mrb, mrb_value self)
+mrb_window_get_visible(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   return mrb_bool_value(window->base.visible);
 }
 
 static mrb_value
-window_set_visible(mrb_state *mrb, mrb_value self)
+mrb_window_set_visible(mrb_state *mrb, mrb_value self)
 {
   mrb_bool value;
   rf_window *window = mrb_get_window(mrb, self);
@@ -824,14 +824,14 @@ window_set_visible(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_openness(mrb_state *mrb, mrb_value self)
+mrb_window_get_openness(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   return mrb_fixnum_value(window->openness);
 }
 
 static mrb_value
-window_set_openness(mrb_state *mrb, mrb_value self)
+mrb_window_set_openness(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_window *window = mrb_get_window(mrb, self);
@@ -841,14 +841,14 @@ window_set_openness(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_pause(mrb_state *mrb, mrb_value self)
+mrb_window_get_pause(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   return mrb_bool_value(window->pause);
 }
 
 static mrb_value
-window_set_pause(mrb_state *mrb, mrb_value self)
+mrb_window_set_pause(mrb_state *mrb, mrb_value self)
 {
   mrb_bool value;
   rf_window *window = mrb_get_window(mrb, self);
@@ -858,14 +858,14 @@ window_set_pause(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_arrows_visible(mrb_state *mrb, mrb_value self)
+mrb_window_get_arrows_visible(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   return mrb_bool_value(window->arrows_visible);
 }
 
 static mrb_value
-window_set_arrows_visible(mrb_state *mrb, mrb_value self)
+mrb_window_set_arrows_visible(mrb_state *mrb, mrb_value self)
 {
   mrb_bool value;
   rf_window *window = mrb_get_window(mrb, self);
@@ -875,14 +875,14 @@ window_set_arrows_visible(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-window_get_active(mrb_state *mrb, mrb_value self)
+mrb_window_get_active(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   return mrb_bool_value(window->active);
 }
 
 static mrb_value
-window_set_active(mrb_state *mrb, mrb_value self)
+mrb_window_set_active(mrb_state *mrb, mrb_value self)
 {
   mrb_bool value;
   rf_window *window = mrb_get_window(mrb, self);
@@ -893,7 +893,7 @@ window_set_active(mrb_state *mrb, mrb_value self)
 
 
 static mrb_value
-window_update(mrb_state *mrb, mrb_value self)
+mrb_window_update(mrb_state *mrb, mrb_value self)
 {
   rf_window *window = mrb_get_window(mrb, self);
   if (!window->active) return;
@@ -916,65 +916,65 @@ mrb_init_ogss_window(mrb_state *mrb)
   struct RClass *window = mrb_define_class(mrb, "Window", mrb->object_class);
   MRB_SET_INSTANCE_TT(window, MRB_TT_DATA);
 
-  mrb_define_method(mrb, window, "initialize", window_initialize, MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, window, "initialize", mrb_window_initialize, MRB_ARGS_OPT(4));
 
-  mrb_define_method(mrb, window, "cursor_rect", window_get_cursor_rect, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "offset", window_get_offset, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "rect", window_get_rect, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "tone", window_get_tone, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "padding", window_get_padding, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "cursor_rect", mrb_window_get_cursor_rect, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "offset", mrb_window_get_offset, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "rect", mrb_window_get_rect, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "tone", mrb_window_get_tone, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "padding", mrb_window_get_padding, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, window, "disposed?", window_disposedQ, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "dispose", window_dispose, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "disposed?", mrb_window_disposedQ, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "dispose", mrb_window_dispose, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, window, "z", window_get_z, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "z=", window_set_z, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "z", mrb_window_get_z, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "z=", mrb_window_set_z, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "viewport", window_get_viewport, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "viewport=", window_set_viewport, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "viewport", mrb_window_get_viewport, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "viewport=", mrb_window_set_viewport, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "skin", window_get_skin, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "skin=", window_set_skin, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, window, "windowskin", window_get_skin, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "windowskin=", window_set_skin, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "skin", mrb_window_get_skin, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "skin=", mrb_window_set_skin, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "windowskin", mrb_window_get_skin, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "windowskin=", mrb_window_set_skin, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "contents", window_get_contents, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "contents=", window_set_contents, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "contents", mrb_window_get_contents, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "contents=", mrb_window_set_contents, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "visible", window_get_visible, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "visible?", window_get_visible, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "visible=", window_set_visible, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "visible", mrb_window_get_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "visible?", mrb_window_get_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "visible=", mrb_window_set_visible, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "arrows_visible", window_get_arrows_visible, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "arrows_visible?", window_get_arrows_visible, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "arrows_visible=", window_set_arrows_visible, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "arrows_visible", mrb_window_get_arrows_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "arrows_visible?", mrb_window_get_arrows_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "arrows_visible=", mrb_window_set_arrows_visible, MRB_ARGS_REQ(1));
 
 
-  mrb_define_method(mrb, window, "pause", window_get_pause, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "pause?", window_get_pause, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "pause=", window_set_pause, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "pause", mrb_window_get_pause, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "pause?", mrb_window_get_pause, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "pause=", mrb_window_set_pause, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "active", window_get_active, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "active?", window_get_active, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "active=", window_set_active, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "active", mrb_window_get_active, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "active?", mrb_window_get_active, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "active=", mrb_window_set_active, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "openness", window_get_openness, MRB_ARGS_NONE());
-  mrb_define_method(mrb, window, "openness=", window_set_openness, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, window, "openness", mrb_window_get_openness, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "openness=", mrb_window_set_openness, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, window, "update", window_update, MRB_ARGS_NONE());
+  mrb_define_method(mrb, window, "update", mrb_window_update, MRB_ARGS_NONE());
 
   struct RClass *padding = mrb_define_class_under(mrb, window, "Padding", mrb->object_class);
   MRB_SET_INSTANCE_TT(padding, MRB_TT_DATA);
 
-  mrb_define_method(mrb, padding, "initialize", padding_initialize, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, padding, "initialize", mrb_padding_initialize, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, padding, "top", padding_get_top, MRB_ARGS_NONE());
-  mrb_define_method(mrb, padding, "bottom", padding_get_bottom, MRB_ARGS_NONE());
-  mrb_define_method(mrb, padding, "left", padding_get_left, MRB_ARGS_NONE());
-  mrb_define_method(mrb, padding, "right", padding_get_right, MRB_ARGS_NONE());
+  mrb_define_method(mrb, padding, "top", mrb_padding_get_top, MRB_ARGS_NONE());
+  mrb_define_method(mrb, padding, "bottom", mrb_padding_get_bottom, MRB_ARGS_NONE());
+  mrb_define_method(mrb, padding, "left", mrb_padding_get_left, MRB_ARGS_NONE());
+  mrb_define_method(mrb, padding, "right", mrb_padding_get_right, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, padding, "top=", padding_set_top, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, padding, "bottom=", padding_set_bottom, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, padding, "left=", padding_set_left, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, padding, "right=", padding_set_right, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, padding, "top=", mrb_padding_set_top, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, padding, "bottom=", mrb_padding_set_bottom, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, padding, "left=", mrb_padding_set_left, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, padding, "right=", mrb_padding_set_right, MRB_ARGS_REQ(1));
 }

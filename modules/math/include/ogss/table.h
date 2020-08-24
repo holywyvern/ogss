@@ -32,6 +32,9 @@ mrb_table_p(mrb_value obj)
   return mrb_data_p(obj) && DATA_TYPE(obj) == &mrb_table_data_type;
 }
 
+uint16_t
+mrb_table_get_value(rf_table *table, mrb_int x, mrb_int y, mrb_int z);
+
 #ifdef __cplusplus
 }
 #endif

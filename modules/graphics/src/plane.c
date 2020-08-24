@@ -225,7 +225,7 @@ rf_draw_plane(mrb_state *mrb, rf_plane *plane)
 }
 
 static mrb_value
-plane_initialize(mrb_state *mrb, mrb_value self)
+mrb_plane_initialize(mrb_state *mrb, mrb_value self)
 {
   if (!shader_ready)
   {
@@ -277,13 +277,13 @@ plane_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_disposedQ(mrb_state *mrb, mrb_value self)
+mrb_plane_disposedQ(mrb_state *mrb, mrb_value self)
 {
   return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
 }
 
 static mrb_value
-plane_dispose(mrb_state *mrb, mrb_value self)
+mrb_plane_dispose(mrb_state *mrb, mrb_value self)
 {
   rf_plane *plane = mrb_get_plane(mrb, self);
   free_plane(mrb, plane);
@@ -292,14 +292,14 @@ plane_dispose(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_get_z(mrb_state *mrb, mrb_value self)
+mrb_plane_get_z(mrb_state *mrb, mrb_value self)
 {
   rf_plane *plane = mrb_get_plane(mrb, self);
   return mrb_fixnum_value(plane->base.z);
 }
 
 static mrb_value
-plane_set_z(mrb_state *mrb, mrb_value self)
+mrb_plane_set_z(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_plane *plane = mrb_get_plane(mrb, self);
@@ -313,13 +313,13 @@ plane_set_z(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_get_viewport(mrb_state *mrb, mrb_value self)
+mrb_plane_get_viewport(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, VIEWPORT);
 }
 
 static mrb_value
-plane_set_viewport(mrb_state *mrb, mrb_value self)
+mrb_plane_set_viewport(mrb_state *mrb, mrb_value self)
 {
   mrb_value parent_value;
   mrb_get_args(mrb, "o", &parent_value);
@@ -343,13 +343,13 @@ plane_set_viewport(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_get_bitmap(mrb_state *mrb, mrb_value self)
+mrb_plane_get_bitmap(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, BITMAP);
 }
 
 static mrb_value
-plane_set_bitmap(mrb_state *mrb, mrb_value self)
+mrb_plane_set_bitmap(mrb_state *mrb, mrb_value self)
 {
   mrb_value value;
   rf_plane *plane = mrb_get_plane(mrb, self);
@@ -368,14 +368,14 @@ plane_set_bitmap(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_get_visible(mrb_state *mrb, mrb_value self)
+mrb_plane_get_visible(mrb_state *mrb, mrb_value self)
 {
   rf_plane *plane = mrb_get_plane(mrb, self);
   return mrb_bool_value(plane->base.visible);
 }
 
 static mrb_value
-plane_set_visible(mrb_state *mrb, mrb_value self)
+mrb_plane_set_visible(mrb_state *mrb, mrb_value self)
 {
   mrb_bool value;
   rf_plane *plane = mrb_get_plane(mrb, self);
@@ -385,14 +385,14 @@ plane_set_visible(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_get_blend_mode(mrb_state *mrb, mrb_value self)
+mrb_plane_get_blend_mode(mrb_state *mrb, mrb_value self)
 {
   rf_plane *plane = mrb_get_plane(mrb, self);
   return mrb_fixnum_value(plane->blend_mode);
 }
 
 static mrb_value
-plane_set_blend_mode(mrb_state *mrb, mrb_value self)
+mrb_plane_set_blend_mode(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_plane *plane = mrb_get_plane(mrb, self);
@@ -402,25 +402,25 @@ plane_set_blend_mode(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-plane_get_offset(mrb_state *mrb, mrb_value self)
+mrb_plane_get_offset(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, OFFSET);
 }
 
 static mrb_value
-plane_get_scale(mrb_state *mrb, mrb_value self)
+mrb_plane_get_scale(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, SCALE);
 }
 
 static mrb_value
-plane_get_color(mrb_state *mrb, mrb_value self)
+mrb_plane_get_color(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, COLOR);
 }
 
 static mrb_value
-plane_get_tone(mrb_state *mrb, mrb_value self)
+mrb_plane_get_tone(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, TONE);
 }
@@ -431,30 +431,30 @@ mrb_init_ogss_plane(mrb_state *mrb)
   struct RClass *plane = mrb_define_class(mrb, "Plane", mrb->object_class);
   MRB_SET_INSTANCE_TT(plane, MRB_TT_DATA);
 
-  mrb_define_method(mrb, plane, "initialize", plane_initialize, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, plane, "initialize", mrb_plane_initialize, MRB_ARGS_OPT(1));
 
-  mrb_define_method(mrb, plane, "disposed?", plane_disposedQ, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "dispose", plane_dispose, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "disposed?", mrb_plane_disposedQ, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "dispose", mrb_plane_dispose, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, plane, "z", plane_get_z, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "z=", plane_set_z, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, plane, "z", mrb_plane_get_z, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "z=", mrb_plane_set_z, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, plane, "viewport", plane_get_viewport, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "viewport=", plane_set_viewport, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, plane, "viewport", mrb_plane_get_viewport, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "viewport=", mrb_plane_set_viewport, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, plane, "bitmap", plane_get_bitmap, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "bitmap=", plane_set_bitmap, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, plane, "bitmap", mrb_plane_get_bitmap, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "bitmap=", mrb_plane_set_bitmap, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, plane, "visible", plane_get_visible, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "visible=", plane_set_visible, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, plane, "visible", mrb_plane_get_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "visible=", mrb_plane_set_visible, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, plane, "blend_mode", plane_get_blend_mode, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "blend_mode=", plane_set_blend_mode, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, plane, "blend_mode", mrb_plane_get_blend_mode, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "blend_mode=", mrb_plane_set_blend_mode, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, plane, "offset", plane_get_offset, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "scroll", plane_get_offset, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "scale", plane_get_scale, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "zoom", plane_get_scale, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "color", plane_get_color, MRB_ARGS_NONE());
-  mrb_define_method(mrb, plane, "tone", plane_get_tone, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "offset", mrb_plane_get_offset, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "scroll", mrb_plane_get_offset, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "scale", mrb_plane_get_scale, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "zoom", mrb_plane_get_scale, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "color", mrb_plane_get_color, MRB_ARGS_NONE());
+  mrb_define_method(mrb, plane, "tone", mrb_plane_get_tone, MRB_ARGS_NONE());
 }

@@ -14,7 +14,7 @@
 #define SIZE mrb_intern_lit(mrb, "#size")
 
 static void
-font_free(mrb_state *mrb, void *ptr)
+free_font(mrb_state *mrb, void *ptr)
 {
   if (ptr)
   {
@@ -24,7 +24,7 @@ font_free(mrb_state *mrb, void *ptr)
   }
 }
 
-const struct mrb_data_type mrb_font_data_type = { "Font", font_free };
+const struct mrb_data_type mrb_font_data_type = { "Font", free_font };
 
 static const char *FONT_EXTENSIONS[] = {
   "",
@@ -33,7 +33,7 @@ static const char *FONT_EXTENSIONS[] = {
 };
 
 static mrb_value
-font_initialize(mrb_state *mrb, mrb_value self)
+mrb_font_initialize(mrb_state *mrb, mrb_value self)
 {
   mrb_bool antialias;
   mrb_int size;
@@ -74,19 +74,19 @@ font_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-font_get_name(mrb_state *mrb, mrb_value self)
+mrb_font_get_name(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, NAME);
 }
 
 static mrb_value
-font_get_size(mrb_state *mrb, mrb_value self)
+mrb_font_get_size(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, SIZE);
 }
 
 static mrb_value
-font_measure_text(mrb_state *mrb, mrb_value self)
+mrb_font_measure_text(mrb_state *mrb, mrb_value self)
 {
   const char *text;
   mrb_int height;
@@ -105,12 +105,12 @@ mrb_init_ogss_font(mrb_state *mrb)
   struct RClass *font = mrb_define_class(mrb, "Font", mrb->object_class);
   MRB_SET_INSTANCE_TT(font, MRB_TT_DATA);
 
-  mrb_define_method(mrb, font, "initialize", font_initialize, MRB_ARGS_OPT(3));
+  mrb_define_method(mrb, font, "initialize", mrb_font_initialize, MRB_ARGS_OPT(3));
 
-  mrb_define_method(mrb, font, "name", font_get_name, MRB_ARGS_NONE());
-  mrb_define_method(mrb, font, "size", font_get_size, MRB_ARGS_NONE());
+  mrb_define_method(mrb, font, "name", mrb_font_get_name, MRB_ARGS_NONE());
+  mrb_define_method(mrb, font, "size", mrb_font_get_size, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, font, "measure_text", font_measure_text, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, font, "measure_text", mrb_font_measure_text, MRB_ARGS_REQ(1));
 }
 
 const char *

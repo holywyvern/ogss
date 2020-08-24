@@ -62,7 +62,7 @@ point_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-point_set(mrb_state *mrb, mrb_value self)
+mrb_point_set(mrb_state *mrb, mrb_value self)
 {
   mrb_int argc = mrb_get_argc(mrb);
   mrb_check_frozen(mrb, mrb_basic_ptr(self));
@@ -161,7 +161,7 @@ mrb_init_ogss_point(mrb_state *mrb)
   mrb_define_method(mrb, point, "initialize", point_initialize, MRB_ARGS_OPT(2));
   mrb_define_method(mrb, point, "initialize_copy", point_initialize, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, point, "set", point_set, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, point, "set", mrb_point_set, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(1));
 
   mrb_define_method(mrb, point, "x", mrb_point_get_x, MRB_ARGS_NONE());
   mrb_define_method(mrb, point, "y", mrb_point_get_y, MRB_ARGS_NONE());

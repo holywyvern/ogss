@@ -49,7 +49,7 @@ set_tone(mrb_state *mrb, mrb_int argc, rf_tone *tone)
 }
 
 static mrb_value
-tone_initialize(mrb_state *mrb, mrb_value self)
+mrb_tone_initialize(mrb_state *mrb, mrb_value self)
 {
   mrb_int argc = mrb_get_argc(mrb);
   switch (argc)
@@ -71,7 +71,7 @@ tone_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-tone_set(mrb_state *mrb, mrb_value self)
+mrb_tone_set(mrb_state *mrb, mrb_value self)
 {
   mrb_int argc = mrb_get_argc(mrb);
   switch (argc)
@@ -90,35 +90,35 @@ tone_set(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-tone_get_red(mrb_state *mrb, mrb_value self)
+mrb_tone_get_red(mrb_state *mrb, mrb_value self)
 {
   rf_tone *tone = mrb_get_tone(mrb, self);
   return mrb_fixnum_value(tone->r);
 }
 
 static mrb_value
-tone_get_green(mrb_state *mrb, mrb_value self)
+mrb_tone_get_green(mrb_state *mrb, mrb_value self)
 {
   rf_tone *tone = mrb_get_tone(mrb, self);
   return mrb_fixnum_value(tone->g);
 }
 
 static mrb_value
-tone_get_blue(mrb_state *mrb, mrb_value self)
+mrb_tone_get_blue(mrb_state *mrb, mrb_value self)
 {
   rf_tone *tone = mrb_get_tone(mrb, self);
   return mrb_fixnum_value(tone->b);
 }
 
 static mrb_value
-tone_get_gray(mrb_state *mrb, mrb_value self)
+mrb_tone_get_gray(mrb_state *mrb, mrb_value self)
 {
   rf_tone *tone = mrb_get_tone(mrb, self);
   return mrb_fixnum_value(tone->a);
 }
 
 static mrb_value
-tone_set_red(mrb_state *mrb, mrb_value self)
+mrb_tone_set_red(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_tone *tone = mrb_get_tone(mrb, self);
@@ -128,7 +128,7 @@ tone_set_red(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-tone_set_green(mrb_state *mrb, mrb_value self)
+mrb_tone_set_green(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_tone *tone = mrb_get_tone(mrb, self);
@@ -138,7 +138,7 @@ tone_set_green(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-tone_set_blue(mrb_state *mrb, mrb_value self)
+mrb_tone_set_blue(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_tone *tone = mrb_get_tone(mrb, self);
@@ -148,7 +148,7 @@ tone_set_blue(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-tone_set_gray(mrb_state *mrb, mrb_value self)
+mrb_tone_set_gray(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_tone *tone = mrb_get_tone(mrb, self);
@@ -158,7 +158,7 @@ tone_set_gray(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-tone_equal(mrb_state *mrb, mrb_value self)
+mrb_tone_equal(mrb_state *mrb, mrb_value self)
 {
   mrb_value other;
   mrb_get_args(mrb, "o", &other);
@@ -178,28 +178,28 @@ mrb_init_ogss_tone(mrb_state *mrb)
   struct RClass *tone = mrb_define_class(mrb, "Tone", mrb->object_class);
   MRB_SET_INSTANCE_TT(tone, MRB_TT_DATA);
 
-  mrb_define_method(mrb, tone, "initialize", tone_initialize, MRB_ARGS_OPT(4));
-  mrb_define_method(mrb, tone, "initialize_copy", tone_initialize, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "initialize", mrb_tone_initialize, MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, tone, "initialize_copy", mrb_tone_initialize, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, tone, "r", tone_get_red, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "g", tone_get_green, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "b", tone_get_blue, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "red", tone_get_red, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "green", tone_get_green, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "blue", tone_get_blue, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "gray", tone_get_gray, MRB_ARGS_NONE());
-  mrb_define_method(mrb, tone, "grey", tone_get_gray, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "r", mrb_tone_get_red, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "g", mrb_tone_get_green, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "b", mrb_tone_get_blue, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "red", mrb_tone_get_red, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "green", mrb_tone_get_green, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "blue", mrb_tone_get_blue, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "gray", mrb_tone_get_gray, MRB_ARGS_NONE());
+  mrb_define_method(mrb, tone, "grey", mrb_tone_get_gray, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, tone, "r=", tone_set_red, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "g=", tone_set_green, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "b=", tone_set_blue, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "red=", tone_set_red, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "green=", tone_set_green, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "blue=", tone_set_blue, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "gray=", tone_set_gray, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, tone, "grey=", tone_set_gray, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "r=", mrb_tone_set_red, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "g=", mrb_tone_set_green, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "b=", mrb_tone_set_blue, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "red=", mrb_tone_set_red, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "green=", mrb_tone_set_green, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "blue=", mrb_tone_set_blue, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "gray=", mrb_tone_set_gray, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "grey=", mrb_tone_set_gray, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, tone, "set", tone_set, MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, tone, "set", mrb_tone_set, MRB_ARGS_OPT(4));
 
-  mrb_define_method(mrb, tone, "==", tone_equal, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, tone, "==", mrb_tone_equal, MRB_ARGS_REQ(1));
 }

@@ -40,7 +40,7 @@ const struct mrb_data_type mrb_bitmap_data_type = {
 };
 
 static mrb_value
-bitmap_initialize(mrb_state *mrb, mrb_value self)
+mrb_bitmap_initialize(mrb_state *mrb, mrb_value self)
 {
   rf_image img;
   mrb_int argc = mrb_get_argc(mrb);
@@ -86,7 +86,7 @@ bitmap_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_initialize_copy(mrb_state *mrb, mrb_value self)
+mrb_bitmap_initialize_copy(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *original;
   mrb_get_args(mrb, "d", &original, &mrb_bitmap_data_type);
@@ -99,21 +99,21 @@ bitmap_initialize_copy(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_rect(mrb_state *mrb, mrb_value self)
+mrb_bitmap_rect(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_rect_new(mrb, 0, 0, bmp->image.width, bmp->image.height);
 }
 
 static mrb_value
-bitmap_get_width(mrb_state *mrb, mrb_value self)
+mrb_bitmap_get_width(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_fixnum_value(bmp->image.width);
 }
 
 static mrb_value
-bitmap_get_height(mrb_state *mrb, mrb_value self)
+mrb_bitmap_get_height(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_fixnum_value(bmp->image.height);
@@ -134,7 +134,7 @@ new_bitmap(mrb_state *mrb)
 #define COLOR_PARAM(v) &v, &mrb_color_data_type
 
 static mrb_value
-bitmap_s_from_color(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_from_color(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h;
   rf_color *color;
@@ -150,7 +150,7 @@ bitmap_s_from_color(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_s_cellular(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_cellular(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h, ts;
   rf_allocator alloc = mrb_get_allocator(mrb);
@@ -165,7 +165,7 @@ bitmap_s_cellular(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_s_checked(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_checked(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h, cx, cy;
   rf_color *c1, *c2;
@@ -181,7 +181,7 @@ bitmap_s_checked(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_s_gradient(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_gradient(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h;
   rf_color *c1, *c2;
@@ -206,7 +206,7 @@ bitmap_s_gradient(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_s_radial_gradient(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_radial_gradient(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h;
   mrb_float d;
@@ -223,7 +223,7 @@ bitmap_s_radial_gradient(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_s_perlin_noise(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_perlin_noise(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h, ox, oy;
   mrb_float s;
@@ -239,7 +239,7 @@ bitmap_s_perlin_noise(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_s_white_noise(mrb_state *mrb, mrb_value self)
+mrb_bitmap_s_white_noise(mrb_state *mrb, mrb_value self)
 {
   mrb_int w, h;
   mrb_float f;
@@ -255,13 +255,13 @@ bitmap_s_white_noise(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_disposedQ(mrb_state *mrb, mrb_value self)
+mrb_bitmap_disposedQ(mrb_state *mrb, mrb_value self)
 {
   return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
 }
 
 static mrb_value
-bitmap_dispose(mrb_state *mrb, mrb_value self)
+mrb_bitmap_dispose(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   free_bitmap(mrb, bmp);
@@ -270,104 +270,104 @@ bitmap_dispose(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-bitmap_blt(mrb_state *mrb, mrb_value self)
+mrb_bitmap_blt(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_stretch_blt(mrb_state *mrb, mrb_value self)
+mrb_bitmap_stretch_blt(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_fill_rect(mrb_state *mrb, mrb_value self)
+mrb_bitmap_fill_rect(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_gradient_fill_rect(mrb_state *mrb, mrb_value self)
+mrb_bitmap_gradient_fill_rect(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_clear(mrb_state *mrb, mrb_value self)
+mrb_bitmap_clear(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_clear_rect(mrb_state *mrb, mrb_value self)
+mrb_bitmap_clear_rect(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_get_pixel(mrb_state *mrb, mrb_value self)
+mrb_bitmap_get_pixel(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_set_pixel(mrb_state *mrb, mrb_value self)
+mrb_bitmap_set_pixel(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_hue_change(mrb_state *mrb, mrb_value self)
+mrb_bitmap_hue_change(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_blur(mrb_state *mrb, mrb_value self)
+mrb_bitmap_blur(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_radial_blur(mrb_state *mrb, mrb_value self)
+mrb_bitmap_radial_blur(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_draw_text(mrb_state *mrb, mrb_value self)
+mrb_bitmap_draw_text(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_text_size(mrb_state *mrb, mrb_value self)
+mrb_bitmap_text_size(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   return mrb_nil_value();
 }
 
 static mrb_value
-bitmap_get_font(mrb_state *mrb, mrb_value self)
+mrb_bitmap_get_font(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, FONT);
 }
 
 static mrb_value
-bitmap_set_font(mrb_state *mrb, mrb_value self)
+mrb_bitmap_set_font(mrb_state *mrb, mrb_value self)
 {
   rf_bitmap *bmp = mrb_get_bitmap(mrb, self);
   mrb_value font;
@@ -387,40 +387,40 @@ mrb_init_ogss_bitmap(mrb_state *mrb)
   struct RClass *bitmap = mrb_define_class(mrb, "Bitmap", mrb->object_class);
   MRB_SET_INSTANCE_TT(bitmap, MRB_TT_DATA);
 
-  mrb_define_method(mrb, bitmap, "initialize", bitmap_initialize, MRB_ARGS_OPT(2));
-  mrb_define_method(mrb, bitmap, "initialize_copy", bitmap_initialize_copy, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "initialize", mrb_bitmap_initialize, MRB_ARGS_OPT(2));
+  mrb_define_method(mrb, bitmap, "initialize_copy", mrb_bitmap_initialize_copy, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, bitmap, "rect", bitmap_rect, MRB_ARGS_NONE());
-  mrb_define_method(mrb, bitmap, "width", bitmap_get_width, MRB_ARGS_NONE());
-  mrb_define_method(mrb, bitmap, "height", bitmap_get_height, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "rect", mrb_bitmap_rect, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "width", mrb_bitmap_get_width, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "height", mrb_bitmap_get_height, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, bitmap, "font", bitmap_get_font, MRB_ARGS_NONE());
-  mrb_define_method(mrb, bitmap, "font=", bitmap_set_font, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "font", mrb_bitmap_get_font, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "font=", mrb_bitmap_set_font, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, bitmap, "disposed?", bitmap_disposedQ, MRB_ARGS_NONE());
-  mrb_define_method(mrb, bitmap, "dispose", bitmap_dispose, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "disposed?", mrb_bitmap_disposedQ, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "dispose", mrb_bitmap_dispose, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, bitmap, "block_transfer", bitmap_blt, MRB_ARGS_REQ(4)|MRB_ARGS_OPT(1));
-  mrb_define_method(mrb, bitmap, "blt", bitmap_blt, MRB_ARGS_REQ(4)|MRB_ARGS_OPT(1));
-  mrb_define_method(mrb, bitmap, "stretch_blt", bitmap_stretch_blt, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(1));
-  mrb_define_method(mrb, bitmap, "fill_rect", bitmap_fill_rect, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(2));
-  mrb_define_method(mrb, bitmap, "gradient_fill_rect", bitmap_gradient_fill_rect, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(4));
-  mrb_define_method(mrb, bitmap, "clear", bitmap_clear, MRB_ARGS_OPT(1));
-  mrb_define_method(mrb, bitmap, "clear_rect", bitmap_clear_rect, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(3));
-  mrb_define_method(mrb, bitmap, "get_pixel", bitmap_get_pixel, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(1));
-  mrb_define_method(mrb, bitmap, "set_pixel", bitmap_set_pixel, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(1));
-  mrb_define_method(mrb, bitmap, "hue_change", bitmap_hue_change, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, bitmap, "change_hue", bitmap_hue_change, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, bitmap, "blur", bitmap_blur, MRB_ARGS_NONE());
-  mrb_define_method(mrb, bitmap, "radial_blur", bitmap_radial_blur, MRB_ARGS_REQ(2));
-  mrb_define_method(mrb, bitmap, "draw_text", bitmap_draw_text, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(4));
-  mrb_define_method(mrb, bitmap, "text_size", bitmap_text_size, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "block_transfer", mrb_bitmap_blt, MRB_ARGS_REQ(4)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "blt", mrb_bitmap_blt, MRB_ARGS_REQ(4)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "stretch_blt", mrb_bitmap_stretch_blt, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "fill_rect", mrb_bitmap_fill_rect, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(2));
+  mrb_define_method(mrb, bitmap, "gradient_fill_rect", mrb_bitmap_gradient_fill_rect, MRB_ARGS_REQ(3)|MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, bitmap, "clear", mrb_bitmap_clear, MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "clear_rect", mrb_bitmap_clear_rect, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(3));
+  mrb_define_method(mrb, bitmap, "get_pixel", mrb_bitmap_get_pixel, MRB_ARGS_REQ(1)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "set_pixel", mrb_bitmap_set_pixel, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(1));
+  mrb_define_method(mrb, bitmap, "hue_change", mrb_bitmap_hue_change, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "change_hue", mrb_bitmap_hue_change, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, bitmap, "blur", mrb_bitmap_blur, MRB_ARGS_NONE());
+  mrb_define_method(mrb, bitmap, "radial_blur", mrb_bitmap_radial_blur, MRB_ARGS_REQ(2));
+  mrb_define_method(mrb, bitmap, "draw_text", mrb_bitmap_draw_text, MRB_ARGS_REQ(2)|MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, bitmap, "text_size", mrb_bitmap_text_size, MRB_ARGS_REQ(1));
 
-  mrb_define_class_method(mrb, bitmap, "cellular", bitmap_s_cellular, MRB_ARGS_ANY());
-  mrb_define_class_method(mrb, bitmap, "checked", bitmap_s_checked, MRB_ARGS_ANY());
-  mrb_define_class_method(mrb, bitmap, "from_color", bitmap_s_from_color, MRB_ARGS_ANY());
-  mrb_define_class_method(mrb, bitmap, "gradient", bitmap_s_gradient, MRB_ARGS_ANY());
-  mrb_define_class_method(mrb, bitmap, "radial_gradient", bitmap_s_radial_gradient, MRB_ARGS_ANY());
-  mrb_define_class_method(mrb, bitmap, "perlin_noise", bitmap_s_perlin_noise, MRB_ARGS_ANY());
-  mrb_define_class_method(mrb, bitmap, "white_noise", bitmap_s_white_noise, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "cellular", mrb_bitmap_s_cellular, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "checked", mrb_bitmap_s_checked, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "from_color", mrb_bitmap_s_from_color, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "gradient", mrb_bitmap_s_gradient, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "radial_gradient", mrb_bitmap_s_radial_gradient, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "perlin_noise", mrb_bitmap_s_perlin_noise, MRB_ARGS_ANY());
+  mrb_define_class_method(mrb, bitmap, "white_noise", mrb_bitmap_s_white_noise, MRB_ARGS_ANY());
 }

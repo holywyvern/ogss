@@ -194,7 +194,7 @@ mrb_rect_dump(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-mrb_rect_load(mrb_state *mrb, mrb_value self)
+mrb_rect_s_load(mrb_state *mrb, mrb_value self)
 {
   mrb_value args;
   mrb_get_args(mrb, "S", &args);
@@ -227,5 +227,5 @@ mrb_init_ogss_rect(mrb_state *mrb)
   mrb_define_method(mrb, rect, "empty", mrb_rect_empty, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, rect, "_dump", mrb_rect_dump, MRB_ARGS_OPT(1));
-  mrb_define_class_method(mrb, rect, "_load", mrb_rect_load, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, rect, "_load", mrb_rect_s_load, MRB_ARGS_REQ(1));
 }

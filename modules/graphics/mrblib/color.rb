@@ -1,6 +1,14 @@
 class Color
-  def self.random(alpha=255)
+  def self.random(alpha = 255)
     new(rand(255), rand(255), rand(255), alpha)
+  end
+
+  def self._load(data)
+    new(*data.unpack('C4'))
+  end
+
+  def _dump(_depth = 0)
+    [red, green, blue, alpha].pack('C4')
   end
 
   def invert

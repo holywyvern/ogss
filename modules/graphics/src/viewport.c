@@ -185,7 +185,7 @@ rf_viewport_draw(mrb_state *mrb, rf_viewport *viewport)
 }
 
 static mrb_value
-viewport_initialize(mrb_state *mrb, mrb_value self)
+mrb_viewport_initialize(mrb_state *mrb, mrb_value self)
 {
   if (!shader_ready)
   {
@@ -250,13 +250,13 @@ viewport_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-viewport_disposedQ(mrb_state *mrb, mrb_value self)
+mrb_viewport_disposedQ(mrb_state *mrb, mrb_value self)
 {
   return mrb_bool_value(DATA_PTR(self) ? 0 : 1);
 }
 
 static mrb_value
-viewport_dispose(mrb_state *mrb, mrb_value self)
+mrb_viewport_dispose(mrb_state *mrb, mrb_value self)
 {
   rf_viewport *view = mrb_get_viewport(mrb, self);
   free_viewport(mrb, view);
@@ -265,38 +265,38 @@ viewport_dispose(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-viewport_color(mrb_state *mrb, mrb_value self)
+mrb_viewport_color(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, COLOR);
 }
 
 static mrb_value
-viewport_tone(mrb_state *mrb, mrb_value self)
+mrb_viewport_tone(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, TONE);
 }
 
 static mrb_value
-viewport_rect(mrb_state *mrb, mrb_value self)
+mrb_viewport_rect(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, RECT);
 }
 
 static mrb_value
-viewport_offset(mrb_state *mrb, mrb_value self)
+mrb_viewport_offset(mrb_state *mrb, mrb_value self)
 {
   return mrb_iv_get(mrb, self, OFFSET);
 }
 
 static mrb_value
-viewport_get_z(mrb_state *mrb, mrb_value self)
+mrb_viewport_get_z(mrb_state *mrb, mrb_value self)
 {
   rf_viewport *view = mrb_get_viewport(mrb, self);
   return mrb_fixnum_value(view->base.base.z);
 }
 
 static mrb_value
-viewport_set_z(mrb_state *mrb, mrb_value self)
+mrb_viewport_set_z(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_viewport *view = mrb_get_viewport(mrb, self);
@@ -310,14 +310,14 @@ viewport_set_z(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-viewport_get_visible(mrb_state *mrb, mrb_value self)
+mrb_viewport_get_visible(mrb_state *mrb, mrb_value self)
 {
   rf_viewport *view = mrb_get_viewport(mrb, self);
   return mrb_bool_value(view->base.base.visible);
 }
 
 static mrb_value
-viewport_set_visible(mrb_state *mrb, mrb_value self)
+mrb_viewport_set_visible(mrb_state *mrb, mrb_value self)
 {
   mrb_bool value;
   rf_viewport *view = mrb_get_viewport(mrb, self);
@@ -327,7 +327,7 @@ viewport_set_visible(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-viewport_flash(mrb_state *mrb, mrb_value self)
+mrb_viewport_flash(mrb_state *mrb, mrb_value self)
 {
   mrb_float t;
   rf_color *color;
@@ -339,7 +339,7 @@ viewport_flash(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-viewport_update(mrb_state *mrb, mrb_value self)
+mrb_viewport_update(mrb_state *mrb, mrb_value self)
 {
   rf_viewport *view = mrb_get_viewport(mrb, self);
   if (view->flash_time > 0)
@@ -362,22 +362,22 @@ mrb_init_ogss_viewport(mrb_state *mrb)
   struct RClass *viewport = mrb_define_class(mrb, "Viewport", mrb->object_class);
   MRB_SET_INSTANCE_TT(viewport, MRB_TT_DATA);
 
-  mrb_define_method(mrb, viewport, "initialize", viewport_initialize, MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, viewport, "initialize", mrb_viewport_initialize, MRB_ARGS_OPT(4));
 
-  mrb_define_method(mrb, viewport, "flash",  viewport_flash, MRB_ARGS_REQ(2));
-  mrb_define_method(mrb, viewport, "update", viewport_update, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "flash",  mrb_viewport_flash, MRB_ARGS_REQ(2));
+  mrb_define_method(mrb, viewport, "update", mrb_viewport_update, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, viewport, "rect", viewport_rect, MRB_ARGS_NONE());
-  mrb_define_method(mrb, viewport, "color", viewport_color, MRB_ARGS_NONE());
-  mrb_define_method(mrb, viewport, "tone", viewport_tone, MRB_ARGS_NONE());
-  mrb_define_method(mrb, viewport, "offset", viewport_offset, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "rect", mrb_viewport_rect, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "color", mrb_viewport_color, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "tone", mrb_viewport_tone, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "offset", mrb_viewport_offset, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, viewport, "disposed?", viewport_disposedQ, MRB_ARGS_NONE());
-  mrb_define_method(mrb, viewport, "dispose", viewport_dispose, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "disposed?", mrb_viewport_disposedQ, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "dispose", mrb_viewport_dispose, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, viewport, "z", viewport_get_z, MRB_ARGS_NONE());
-  mrb_define_method(mrb, viewport, "z=", viewport_set_z, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, viewport, "z", mrb_viewport_get_z, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "z=", mrb_viewport_set_z, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, viewport, "visible", viewport_get_visible, MRB_ARGS_NONE());
-  mrb_define_method(mrb, viewport, "visible=", viewport_set_visible, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, viewport, "visible", mrb_viewport_get_visible, MRB_ARGS_NONE());
+  mrb_define_method(mrb, viewport, "visible=", mrb_viewport_set_visible, MRB_ARGS_REQ(1));
 }

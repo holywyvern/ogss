@@ -48,7 +48,7 @@ set_color(mrb_state *mrb, mrb_int argc, rf_color *color)
 }
 
 static mrb_value
-color_initialize(mrb_state *mrb, mrb_value self)
+mrb_color_initialize(mrb_state *mrb, mrb_value self)
 {
   mrb_int argc = mrb_get_argc(mrb);
   switch (argc)
@@ -70,7 +70,7 @@ color_initialize(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-color_set(mrb_state *mrb, mrb_value self)
+mrb_color_set(mrb_state *mrb, mrb_value self)
 {
   mrb_int argc = mrb_get_argc(mrb);
   switch (argc)
@@ -89,35 +89,35 @@ color_set(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-color_get_red(mrb_state *mrb, mrb_value self)
+mrb_color_get_red(mrb_state *mrb, mrb_value self)
 {
   rf_color *color = mrb_get_color(mrb, self);
   return mrb_fixnum_value(color->r);
 }
 
 static mrb_value
-color_get_green(mrb_state *mrb, mrb_value self)
+mrb_color_get_green(mrb_state *mrb, mrb_value self)
 {
   rf_color *color = mrb_get_color(mrb, self);
   return mrb_fixnum_value(color->g);
 }
 
 static mrb_value
-color_get_blue(mrb_state *mrb, mrb_value self)
+mrb_color_get_blue(mrb_state *mrb, mrb_value self)
 {
   rf_color *color = mrb_get_color(mrb, self);
   return mrb_fixnum_value(color->b);
 }
 
 static mrb_value
-color_get_alpha(mrb_state *mrb, mrb_value self)
+mrb_color_get_alpha(mrb_state *mrb, mrb_value self)
 {
   rf_color *color = mrb_get_color(mrb, self);
   return mrb_fixnum_value(color->a);
 }
 
 static mrb_value
-color_set_red(mrb_state *mrb, mrb_value self)
+mrb_color_set_red(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_color *color = mrb_get_color(mrb, self);
@@ -127,7 +127,7 @@ color_set_red(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-color_set_green(mrb_state *mrb, mrb_value self)
+mrb_color_set_green(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_color *color = mrb_get_color(mrb, self);
@@ -137,7 +137,7 @@ color_set_green(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-color_set_blue(mrb_state *mrb, mrb_value self)
+mrb_color_set_blue(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_color *color = mrb_get_color(mrb, self);
@@ -147,7 +147,7 @@ color_set_blue(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-color_set_alpha(mrb_state *mrb, mrb_value self)
+mrb_color_set_alpha(mrb_state *mrb, mrb_value self)
 {
   mrb_int value;
   rf_color *color = mrb_get_color(mrb, self);
@@ -157,7 +157,7 @@ color_set_alpha(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-color_equal(mrb_state *mrb, mrb_value self)
+mrb_color_equal(mrb_state *mrb, mrb_value self)
 {
   mrb_value other;
   mrb_get_args(mrb, "o", &other);
@@ -177,28 +177,28 @@ mrb_init_ogss_color(mrb_state *mrb)
   struct RClass *color = mrb_define_class(mrb, "Color", mrb->object_class);
   MRB_SET_INSTANCE_TT(color, MRB_TT_DATA);
 
-  mrb_define_method(mrb, color, "initialize", color_initialize, MRB_ARGS_OPT(4));
-  mrb_define_method(mrb, color, "initialize_copy", color_initialize, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "initialize", mrb_color_initialize, MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, color, "initialize_copy", mrb_color_initialize, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, color, "r", color_get_red, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "g", color_get_green, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "b", color_get_blue, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "a", color_get_alpha, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "red", color_get_red, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "green", color_get_green, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "blue", color_get_blue, MRB_ARGS_NONE());
-  mrb_define_method(mrb, color, "alpha", color_get_alpha, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "r", mrb_color_get_red, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "g", mrb_color_get_green, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "b", mrb_color_get_blue, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "a", mrb_color_get_alpha, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "red", mrb_color_get_red, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "green", mrb_color_get_green, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "blue", mrb_color_get_blue, MRB_ARGS_NONE());
+  mrb_define_method(mrb, color, "alpha", mrb_color_get_alpha, MRB_ARGS_NONE());
 
-  mrb_define_method(mrb, color, "r=", color_set_red, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "g=", color_set_green, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "b=", color_set_blue, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "a=", color_set_alpha, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "red=", color_set_red, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "green=", color_set_green, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "blue=", color_set_blue, MRB_ARGS_REQ(1));
-  mrb_define_method(mrb, color, "alpha=", color_set_alpha, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "r=", mrb_color_set_red, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "g=", mrb_color_set_green, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "b=", mrb_color_set_blue, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "a=", mrb_color_set_alpha, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "red=", mrb_color_set_red, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "green=", mrb_color_set_green, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "blue=", mrb_color_set_blue, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "alpha=", mrb_color_set_alpha, MRB_ARGS_REQ(1));
 
-  mrb_define_method(mrb, color, "set", color_set, MRB_ARGS_OPT(4));
+  mrb_define_method(mrb, color, "set", mrb_color_set, MRB_ARGS_OPT(4));
 
-  mrb_define_method(mrb, color, "==", color_equal, MRB_ARGS_REQ(1));
+  mrb_define_method(mrb, color, "==", mrb_color_equal, MRB_ARGS_REQ(1));
 }

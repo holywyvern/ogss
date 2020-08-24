@@ -10,7 +10,7 @@
 #define BODY_PACK mrb_str_new_cstr(mrb, "S")
 
 static void
-mrb_table_free(mrb_state *mrb, void *ptr)
+free_table(mrb_state *mrb, void *ptr)
 {
   if (ptr)
   {
@@ -21,7 +21,7 @@ mrb_table_free(mrb_state *mrb, void *ptr)
 }
 
 const struct mrb_data_type mrb_table_data_type = {
-  "Table", mrb_table_free
+  "Table", free_table
 };
 
 static inline rf_table *
@@ -69,6 +69,12 @@ table_copy(rf_table *new_table, rf_table *old_table)
       }
     }
   }
+}
+
+uint16_t
+mrb_table_get_value(rf_table *table, mrb_int x, mrb_int y, mrb_int z)
+{
+  return table_get_value(table, x, y, z);
 }
 
 static mrb_value
@@ -243,7 +249,7 @@ mrb_table_dump(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-mrb_table_load(mrb_state *mrb, mrb_value self)
+mrb_table_s_load(mrb_state *mrb, mrb_value self)
 {
   mrb_value data;
   mrb_get_args(mrb, "S", &data);
@@ -287,5 +293,5 @@ mrb_init_ogss_table(mrb_state *mrb)
   mrb_define_method(mrb, table, "to_a", mrb_table_to_a, MRB_ARGS_NONE());
 
   mrb_define_method(mrb, table, "_dump", mrb_table_dump, MRB_ARGS_OPT(1));
-  mrb_define_class_method(mrb, table, "_load", mrb_table_load, MRB_ARGS_REQ(1));
+  mrb_define_class_method(mrb, table, "_load", mrb_table_s_load, MRB_ARGS_REQ(1));
 }
