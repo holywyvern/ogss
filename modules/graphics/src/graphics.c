@@ -396,15 +396,15 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
   if (argc < 3) vague = 40;
   if (argc < 2) name = NULL;
   if (argc < 1) duration = 0.17;
+  mrb_container_update(mrb, &(config->container));
+  rf_begin_render_to_texture(config->render_texture);
+    rf_clear(RF_BLANK);
+    mrb_container_draw_children(mrb, &(config->container));
+  rf_end_render_to_texture();
   if (duration > 0)
   {
     if (name)
     {
-      mrb_container_update(mrb, &(config->container));
-      rf_begin_render_to_texture(config->render_texture);
-        rf_clear(RF_BLANK);
-        mrb_container_draw_children(mrb, &(config->container));
-      rf_end_render_to_texture();
       const char *new_name = mrb_filesystem_join(mrb, "Graphics", name);
       rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, MRB_IMAGE_EXTENSIONS);
       rf_texture2d transition_texture = rf_load_texture_from_file(new_name, mrb_get_allocator(mrb), io);
@@ -435,13 +435,13 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
       {
         dt -= config->dt;
         if (dt < 0) dt = 0;
-        draw_screen(config->render_texture.texture, (rf_color){255, 255, 255, config->brightness}, 0);
         mrb_int left = (mrb_int)(255 * dt / duration);
         mrb_int bg = config->brightness * left / 255;
         rf_begin();
-        rf_begin_blend_mode(RF_BLEND_ALPHA);
-          draw_screen(config->frozen_img, (rf_color){255, 255, 255, bg}, 0);
-        rf_end_blend_mode();
+          draw_screen(config->render_texture.texture, (rf_color){255, 255, 255, config->brightness}, 0);
+          rf_begin_blend_mode(RF_BLEND_ALPHA);
+            draw_screen(config->frozen_img, (rf_color){255, 255, 255, bg}, 0);
+          rf_end_blend_mode();
         rf_end();
         mrb_graphics_frame_reset(mrb, self);
       }
