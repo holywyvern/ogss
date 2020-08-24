@@ -420,7 +420,7 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
             draw_screen(config->render_texture.texture, RF_RAYWHITE, 0);
             rf_begin_shader(transition_shader);
               bind_transition_shader(transition_texture, 1.0f - left);
-              draw_screen(transition_texture, RF_RAYWHITE, &transition_texture);
+              draw_screen(config->frozen_img, RF_RAYWHITE, &transition_texture);
             rf_end_shader();
           rf_end_blend_mode();
         rf_end();
