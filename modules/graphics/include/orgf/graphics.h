@@ -1,17 +1,17 @@
-#ifndef OGSS_GRAPHICS_H
-#define OGSS_GRAPHICS_H
+#ifndef ORGF_GRAPHICS_H
+#define ORGF_GRAPHICS_H
 
 #include <mruby.h>
 #include <rayfork.h>
 #include <time.h>
 
-#include <ogss/drawable.h>
+#include <orgf/drawable.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 typedef GLFWwindow * rf_window_ref;
@@ -34,7 +34,7 @@ struct rf_graphics_config
   mrb_bool                   is_open;
   rf_window_ref              window;
   mrb_value                  title;
-  rf_gfx_backend_init_data  *data;
+  rf_gfx_backend_data       *data;
   mrb_bool                   is_frozen;
   rf_texture2d               frozen_img;
   rf_render_texture2d        render_texture;

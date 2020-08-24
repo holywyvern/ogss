@@ -5,13 +5,13 @@
 
 #include <rayfork.h>
 
-#include <ogss/graphics.h>
-#include <ogss/drawable.h>
-#include <ogss/viewport.h>
-#include <ogss/bitmap.h>
-#include <ogss/plane.h>
-#include <ogss/point.h>
-#include <ogss/color.h>
+#include <orgf/graphics.h>
+#include <orgf/drawable.h>
+#include <orgf/viewport.h>
+#include <orgf/bitmap.h>
+#include <orgf/plane.h>
+#include <orgf/point.h>
+#include <orgf/color.h>
 #include <math.h>
 
 #define BITMAP mrb_intern_cstr(mrb, "#bitmap")
@@ -426,7 +426,7 @@ mrb_plane_get_tone(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_plane(mrb_state *mrb)
+mrb_init_orgf_plane(mrb_state *mrb)
 {
   struct RClass *plane = mrb_define_class(mrb, "Plane", mrb->object_class);
   MRB_SET_INSTANCE_TT(plane, MRB_TT_DATA);

@@ -4,7 +4,7 @@
 #include <mruby/string.h>
 #include <mruby/class.h>
 
-#include <ogss/table.h>
+#include <orgf/table.h>
 
 #define HEAD_PACK mrb_str_new_cstr(mrb, "L5")
 #define BODY_PACK mrb_str_new_cstr(mrb, "S")
@@ -273,7 +273,7 @@ mrb_table_s_load(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_table(mrb_state *mrb)
+mrb_init_orgf_table(mrb_state *mrb)
 {
   struct RClass *table = mrb_define_class(mrb, "Table", mrb->object_class);
   MRB_SET_INSTANCE_TT(table, MRB_TT_DATA);

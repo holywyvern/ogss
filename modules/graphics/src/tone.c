@@ -2,7 +2,7 @@
 #include <mruby/class.h>
 #include <mruby/data.h>
 
-#include <ogss/tone.h>
+#include <orgf/tone.h>
 
 const struct mrb_data_type mrb_tone_data_type = { "Tone", mrb_free };
 
@@ -173,7 +173,7 @@ mrb_tone_equal(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_tone(mrb_state *mrb)
+mrb_init_orgf_tone(mrb_state *mrb)
 {
   struct RClass *tone = mrb_define_class(mrb, "Tone", mrb->object_class);
   MRB_SET_INSTANCE_TT(tone, MRB_TT_DATA);

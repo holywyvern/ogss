@@ -1,13 +1,13 @@
-#ifndef OGSS_WINDOW_H
-#define OGSS_WINDOW_H 1
+#ifndef ORGF_WINDOW_H
+#define ORGF_WINDOW_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>
 #include <rayfork.h>
 
-#include <ogss/drawable.h>
-#include <ogss/bitmap.h>
-#include <ogss/tone.h>
+#include <orgf/drawable.h>
+#include <orgf/bitmap.h>
+#include <orgf/tone.h>
 
 #ifdef __cplusplus
 extern "C" {

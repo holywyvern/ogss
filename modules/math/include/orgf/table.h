@@ -1,5 +1,5 @@
-#ifndef OGSS_TABLE_H
-#define OGSS_TABLE_H 1
+#ifndef ORGF_TABLE_H
+#define ORGF_TABLE_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>
@@ -39,4 +39,4 @@ mrb_table_get_value(rf_table *table, mrb_int x, mrb_int y, mrb_int z);
 }
 #endif
 
-#endif /* OGSS_TABLE_H */
+#endif /* ORGF_TABLE_H */

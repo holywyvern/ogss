@@ -1,5 +1,5 @@
-#ifndef OGSS_FILE_H
-#define OGSS_FILE_H 1
+#ifndef ORGF_FILE_H
+#define ORGF_FILE_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>

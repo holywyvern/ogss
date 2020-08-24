@@ -1,5 +1,5 @@
-#ifndef OGSS_FONT_H
-#define OGSS_FONT_H 1
+#ifndef ORGF_FONT_H
+#define ORGF_FONT_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>

@@ -5,12 +5,12 @@
 
 #include <rayfork.h>
 
-#include <ogss/point.h>
-#include <ogss/color.h>
-#include <ogss/drawable.h>
-#include <ogss/rect.h>
-#include <ogss/viewport.h>
-#include <ogss/graphics.h>
+#include <orgf/point.h>
+#include <orgf/color.h>
+#include <orgf/drawable.h>
+#include <orgf/rect.h>
+#include <orgf/viewport.h>
+#include <orgf/graphics.h>
 
 #define RECT mrb_intern_lit(mrb, "#rect")
 #define COLOR mrb_intern_lit(mrb, "#color")
@@ -357,7 +357,7 @@ mrb_viewport_update(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_viewport(mrb_state *mrb)
+mrb_init_orgf_viewport(mrb_state *mrb)
 {
   struct RClass *viewport = mrb_define_class(mrb, "Viewport", mrb->object_class);
   MRB_SET_INSTANCE_TT(viewport, MRB_TT_DATA);

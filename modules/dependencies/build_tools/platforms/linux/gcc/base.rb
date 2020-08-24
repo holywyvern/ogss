@@ -12,11 +12,11 @@ module PlatformDetector
 
         def compiler_definitions
           [
-            'OGSS_PLATFORM_DESKTOP',
-            'OGSS_PLATFORM_AMD64',
-            'OGSS_PLATFORM_LINUX',
-            'OGSS_PLATFORM_GCC',
-            'OGSS_PLATFORM_LINUX_GCC_AMD64'
+            'ORGF_PLATFORM_DESKTOP',
+            'ORGF_PLATFORM_AMD64',
+            'ORGF_PLATFORM_LINUX',
+            'ORGF_PLATFORM_GCC',
+            'ORGF_PLATFORM_LINUX_GCC_AMD64'
           ]
         end        
       end

@@ -3,7 +3,7 @@
 #include <mruby/data.h>
 #include <mruby/array.h>
 
-#include <ogss/point.h>
+#include <orgf/point.h>
 #include <rayfork.h>
 
 #define VEC2_PACK mrb_str_new_cstr(mrb, "F2")
@@ -153,7 +153,7 @@ mrb_point_equal(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_point(mrb_state *mrb)
+mrb_init_orgf_point(mrb_state *mrb)
 {
   struct RClass *point = mrb_define_class(mrb, "Point", mrb->object_class);
   MRB_SET_INSTANCE_TT(point, MRB_TT_DATA);

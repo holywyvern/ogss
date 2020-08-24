@@ -1,4 +1,4 @@
-MRuby::Gem::Specification.new('ogss-game-engine') do |spec|
+MRuby::Gem::Specification.new('orgf-game-engine') do |spec|
   spec.license = 'Apache-2.0'
   spec.author  = 'Ramiro Rojo'
 

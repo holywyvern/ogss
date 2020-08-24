@@ -5,12 +5,12 @@
 
 #include <rayfork.h>
 
-#include <ogss/alloc.h>
-#include <ogss/color.h>
-#include <ogss/font.h>
-#include <ogss/bitmap.h>
-#include <ogss/file.h>
-#include <ogss/rect.h>
+#include <orgf/alloc.h>
+#include <orgf/color.h>
+#include <orgf/font.h>
+#include <orgf/bitmap.h>
+#include <orgf/file.h>
+#include <orgf/rect.h>
 
 #define FONT mrb_intern_lit(mrb, "#font")
 
@@ -382,7 +382,7 @@ mrb_bitmap_set_font(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_bitmap(mrb_state *mrb)
+mrb_init_orgf_bitmap(mrb_state *mrb)
 {
   struct RClass *bitmap = mrb_define_class(mrb, "Bitmap", mrb->object_class);
   MRB_SET_INSTANCE_TT(bitmap, MRB_TT_DATA);

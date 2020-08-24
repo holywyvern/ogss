@@ -1,4 +1,4 @@
-#include <ogss/file.h>
+#include <orgf/file.h>
 
 #include <mruby.h>
 #include <mruby/variable.h>
@@ -28,7 +28,7 @@ struct mrb_file
   enum mrb_file_mode mode;
 };
 
-static struct ogss_file_alloc_ext
+static struct orgf_file_alloc_ext
 {
   mrb_state   *mrb;
   const char **extensions;
@@ -265,7 +265,7 @@ rf_mrb_file_read(void* user_data, const char* filename, void* dst, int dst_size)
 static int
 rf_mrb_file_size_with_ext(void* user_data, const char* filename)
 {
-  struct ogss_file_alloc_ext *u = (struct ogss_file_alloc_ext *)user_data;
+  struct orgf_file_alloc_ext *u = (struct orgf_file_alloc_ext *)user_data;
   mrb_file *f = mrb_file_open_read_with_extensions(u->mrb, filename, u->extensions);
   int size = (int)mrb_file_length(f);
   mrb_file_close(f);
@@ -275,7 +275,7 @@ rf_mrb_file_size_with_ext(void* user_data, const char* filename)
 static bool
 rf_mrb_file_read_with_ext(void* user_data, const char* filename, void* dst, int dst_size)
 {
-  struct ogss_file_alloc_ext *u = (struct ogss_file_alloc_ext *)user_data;
+  struct orgf_file_alloc_ext *u = (struct orgf_file_alloc_ext *)user_data;
   mrb_file *f = mrb_file_open_read_with_extensions(u->mrb, filename, u->extensions);
   size_t read = mrb_file_read(f, dst_size, (char *)dst);
   mrb_file_close(f);
@@ -609,7 +609,7 @@ mrb_setup_filesystem(mrb_state *mrb)
     }
     PHYSFS_permitSymbolicLinks(1);
     PHYSFS_mount(PHYSFS_getBaseDir(), NULL, 1);
-    mrb_file_set_write(mrb, "OGSS Games", "Default");
+    mrb_file_set_write(mrb, "ORGF Games", "Default");
   }
   mrb_define_module_function(mrb, mrb->kernel_module, "load", mrb_load, MRB_ARGS_REQ(1));
   mrb_define_module_function(mrb, mrb->kernel_module, "require", mrb_require, MRB_ARGS_REQ(1));

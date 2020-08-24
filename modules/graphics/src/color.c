@@ -2,7 +2,7 @@
 #include <mruby/class.h>
 #include <mruby/data.h>
 
-#include <ogss/color.h>
+#include <orgf/color.h>
 
 const struct mrb_data_type mrb_color_data_type = { "Color", mrb_free };
 
@@ -172,7 +172,7 @@ mrb_color_equal(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_color(mrb_state *mrb)
+mrb_init_orgf_color(mrb_state *mrb)
 {
   struct RClass *color = mrb_define_class(mrb, "Color", mrb->object_class);
   MRB_SET_INSTANCE_TT(color, MRB_TT_DATA);

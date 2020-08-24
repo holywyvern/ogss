@@ -1,5 +1,5 @@
-#ifndef OGSS_DRAWABLE_H
-#define OGSS_DRAWABLE_H 1
+#ifndef ORGF_DRAWABLE_H
+#define ORGF_DRAWABLE_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>

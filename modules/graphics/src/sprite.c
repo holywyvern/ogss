@@ -5,14 +5,14 @@
 
 #include <rayfork.h>
 
-#include <ogss/drawable.h>
-#include <ogss/point.h>
-#include <ogss/rect.h>
-#include <ogss/color.h>
-#include <ogss/bitmap.h>
-#include <ogss/sprite.h>
-#include <ogss/viewport.h>
-#include <ogss/graphics.h>
+#include <orgf/drawable.h>
+#include <orgf/point.h>
+#include <orgf/rect.h>
+#include <orgf/color.h>
+#include <orgf/bitmap.h>
+#include <orgf/sprite.h>
+#include <orgf/viewport.h>
+#include <orgf/graphics.h>
 
 #define BITMAP mrb_intern_cstr(mrb, "#bitmap")
 #define SRC_RECT mrb_intern_cstr(mrb, "#src_rect")
@@ -599,7 +599,7 @@ mrb_sprite_set_wave_phase(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_sprite(mrb_state *mrb)
+mrb_init_orgf_sprite(mrb_state *mrb)
 {
   struct RClass *sprite = mrb_define_class(mrb, "Sprite", mrb->object_class);
   MRB_SET_INSTANCE_TT(sprite, MRB_TT_DATA);

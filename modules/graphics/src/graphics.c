@@ -8,9 +8,9 @@
 
 #include <rayfork.h>
 
-#include <ogss/alloc.h>
-#include <ogss/drawable.h>
-#include <ogss/graphics.h>
+#include <orgf/alloc.h>
+#include <orgf/drawable.h>
+#include <orgf/graphics.h>
 
 #define CONFIG mrb_intern_lit(mrb, "#config")
 #define TITLE mrb_intern_lit(mrb, "#title")
@@ -99,7 +99,7 @@ mrb_graphics_set_title(mrb_state *mrb, mrb_value self)
   rf_graphics_config *config = get_config(mrb, self);
   if (config->is_open)
   {
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
     glfwSetWindowTitle(config->window, mrb_str_to_cstr(mrb, value));
 #endif
   }
@@ -121,7 +121,7 @@ mrb_graphics_resize_screen(mrb_state *mrb, mrb_value self)
   {
     rf_unload_render_texture(config->render_texture);
     config->render_texture = rf_load_render_texture((int)config->width, (int)config->height);
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
     glfwSetWindowSize(config->window, (int)width, (int)height);
 #endif
   }
@@ -224,7 +224,7 @@ mrb_graphics_frame_reset(mrb_state *mrb, mrb_value self)
   mrb_value now = mrb_funcall(mrb, mrb_obj_value(mrb_class_get(mrb, "Time")), "now", 0);
   config->dt = mrb_float(mrb_Float(mrb, mrb_funcall(mrb, now, "-", 1, last_update)));
   mrb_iv_set(mrb, self, LAST_UPDATE, now);
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
   glfwSwapBuffers(config->window);
   glfwPollEvents();
   if (glfwWindowShouldClose(config->window)) {
@@ -425,7 +425,7 @@ mrb_config_initialize(mrb_state *mrb, mrb_value self)
   mrb_container_init(mrb, &(config->container));
   DATA_TYPE(self) = &config_type;
   DATA_PTR(self) = config;
-  mrb_iv_set(mrb, self, TITLE, mrb_str_new_cstr(mrb, "OGSS Game"));
+  mrb_iv_set(mrb, self, TITLE, mrb_str_new_cstr(mrb, "ORGF Game"));
   return mrb_nil_value();
 }
 
@@ -435,7 +435,7 @@ call_block(mrb_state *mrb, mrb_value block)
   return mrb_funcall(mrb, block, "call", 0);
 }
 
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
 void center_window(GLFWwindow *window, GLFWmonitor *monitor)
 {
     if (!monitor)
@@ -465,7 +465,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "&!", &block);
   struct RClass *graphics = mrb_module_get(mrb, "Graphics");
   rf_graphics_config *config = get_config(mrb, mrb_obj_value(graphics));
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
   if (!glfwInit()) mrb_raise(mrb, E_RUNTIME_ERROR, "Failed to create game screen");
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   title = mrb_str_to_cstr(mrb, config->title);
@@ -475,14 +475,11 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   glfwMakeContextCurrent(config->window);
   glfwSwapInterval(1);
   gladLoadGL();
-  if (config->data) {
-    mrb_free(mrb, config->data);
-  }
-  config->data = mrb_malloc(mrb, sizeof(rf_opengl_procs));
-  rf_opengl_procs *procs = (rf_opengl_procs *)config->data;
-  *procs = RF_DEFAULT_OPENGL_PROCS;
+  config->data = RF_DEFAULT_GFX_BACKEND_INIT_DATA;
 #endif
-  rf_init(&(config->context), (int)config->width, (int)config->height, RF_DEFAULT_LOGGER, config->data);
+  config->context = (rf_context){0};
+  rf_init_context(&(config->context));
+  rf_init_gfx((int)config->width, (int)config->height, config->data);
   rf_allocator alloc = mrb_get_allocator(mrb);
   config->render_batch = rf_create_default_render_batch(alloc);
   rf_set_active_render_batch(&(config->render_batch));
@@ -495,7 +492,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   mrb_value ret = mrb_protect(mrb, call_block, block, &error);
   if (error) mrb_exc_raise(mrb, ret);
   config->is_open = 0;
-#ifdef OGSS_PLATFORM_GLFW
+#ifdef ORGF_PLATFORM_GLFW
   glfwDestroyWindow(config->window);
   config->window = NULL;
   glfwTerminate();
@@ -505,7 +502,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_graphics(mrb_state *mrb)
+mrb_init_orgf_graphics(mrb_state *mrb)
 {
   struct RClass *graphics = mrb_define_module(mrb, "Graphics");
   struct RClass *config = mrb_define_class_under(mrb, graphics, "Config", mrb->object_class);

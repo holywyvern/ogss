@@ -9,7 +9,9 @@
 #include <mruby/variable.h>
 #include <mruby/error.h>
 
-#include <ogss/file.h>
+#include <orgf/file.h>
+
+#include <time.h>
 
 int
 main(int argc, char *argv[])
@@ -25,7 +27,9 @@ main(int argc, char *argv[])
   }
   mrb_define_global_const(mrb, "ARGV", ARGV);
   mrb_setup_filesystem(mrb);
-  mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "require", 1, mrb_str_new_cstr(mrb, "scripts/main"));
+  mrb_int random_seed = (mrb_int)time(NULL);
+  mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "srand", 1, mrb_fixnum_value(random_seed));
+  mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "require", 1, mrb_str_new_cstr(mrb, "Scripts/main"));
   return_value = EXIT_SUCCESS;
   if (mrb->exc) {
     mrb_funcall(mrb, mrb_obj_value(mrb->kernel_module), "msgbox_error", 1, mrb_obj_value(mrb->exc));

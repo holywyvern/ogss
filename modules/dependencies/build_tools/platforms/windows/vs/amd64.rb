@@ -8,14 +8,14 @@ module PlatformDetector
 
         def compiler_definitions
           %w[
-            OGSS_PLATFORM_DESKTOP
-            OGSS_PLATFORM_AMD64
-            OGSS_PLATFORM_WINDOWS
-            OGSS_PLATFORM_VS
-            OGSS_PLATFORM_WINDOWS_VS_AMD64
-            OGSS_PLATFORM_GLFW
-            OGSS_PLATFORM_OPENGL
-            OGSS_PLATFORM_PHYSFS
+            ORGF_PLATFORM_DESKTOP
+            ORGF_PLATFORM_AMD64
+            ORGF_PLATFORM_WINDOWS
+            ORGF_PLATFORM_VS
+            ORGF_PLATFORM_WINDOWS_VS_AMD64
+            ORGF_PLATFORM_GLFW
+            ORGF_PLATFORM_OPENGL
+            ORGF_PLATFORM_PHYSFS
           ]
         end
       end

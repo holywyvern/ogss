@@ -1,15 +1,15 @@
-#ifndef OGSS_SPRITE_H
-#define OGSS_SPRITE_H 1
+#ifndef ORGF_TILEMAP_H
+#define ORGF_TILEMAP_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>
 #include <rayfork.h>
 
-#include <ogss/bitmap.h>
-#include <ogss/drawable.h>
-#include <ogss/viewport.h>
-#include <ogss/tone.h>
-#include <ogss/table.h>
+#include <orgf/bitmap.h>
+#include <orgf/drawable.h>
+#include <orgf/viewport.h>
+#include <orgf/tone.h>
+#include <orgf/table.h>
 
 #ifdef __cplusplus
 extern "C" {

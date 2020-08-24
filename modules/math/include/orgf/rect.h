@@ -1,5 +1,5 @@
-#ifndef OGSS_RECT_H
-#define OGSS_RECT_H 1
+#ifndef ORGF_RECT_H
+#define ORGF_RECT_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>
@@ -42,4 +42,4 @@ mrb_rect_new(mrb_state *mrb, mrb_float x, mrb_float y, mrb_float w, mrb_float h)
 }
 #endif
 
-#endif /* OGSS_RECT_H */
+#endif /* ORGF_RECT_H */

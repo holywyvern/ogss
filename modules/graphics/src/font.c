@@ -4,9 +4,9 @@
 #include <mruby/string.h>
 #include <mruby/variable.h>
 
-#include <ogss/alloc.h>
-#include <ogss/file.h>
-#include <ogss/font.h>
+#include <orgf/alloc.h>
+#include <orgf/file.h>
+#include <orgf/font.h>
 
 #include <rayfork.h>
 
@@ -100,7 +100,7 @@ mrb_font_measure_text(mrb_state *mrb, mrb_value self)
 }
 
 void
-mrb_init_ogss_font(mrb_state *mrb)
+mrb_init_orgf_font(mrb_state *mrb)
 {
   struct RClass *font = mrb_define_class(mrb, "Font", mrb->object_class);
   MRB_SET_INSTANCE_TT(font, MRB_TT_DATA);

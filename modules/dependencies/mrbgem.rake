@@ -1,6 +1,6 @@
 require_relative 'build_tools/build_tools'
 
-MRuby::Gem::Specification.new('ogss-dependencies') do |spec|
+MRuby::Gem::Specification.new('orgf-dependencies') do |spec|
   spec.license = 'Apache-2.0'
   spec.author  = 'Ramiro Rojo'
 

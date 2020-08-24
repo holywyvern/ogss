@@ -1,5 +1,5 @@
-#ifndef OGSS_ALLOC_H
-#define OGSS_ALLOC_H 1
+#ifndef ORGF_ALLOC_H
+#define ORGF_ALLOC_H 1
 
 #include <mruby.h>
 #include <rayfork.h>

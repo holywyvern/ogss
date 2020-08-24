@@ -1,11 +1,11 @@
-#ifndef OGSS_BITMAP_H
-#define OGSS_BITMAP_H 1
+#ifndef ORGF_BITMAP_H
+#define ORGF_BITMAP_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>
 #include <rayfork.h>
 
-#include <ogss/drawable.h>
+#include <orgf/drawable.h>
 
 #ifdef __cplusplus
 extern "C" {

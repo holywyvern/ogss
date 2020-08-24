@@ -85,7 +85,7 @@ mrb_msgbox_error(mrb_state *mrb, mrb_value self)
 }
 
 extern "C" void
-mrb_init_ogss_msgbox(mrb_state *mrb)
+mrb_init_orgf_msgbox(mrb_state *mrb)
 {
   mrb_define_module_function(mrb, mrb->kernel_module, "msgbox", mrb_msgbox, MRB_ARGS_REQ(1)|MRB_ARGS_REST());
   mrb_define_module_function(mrb, mrb->kernel_module, "msgbox_error", mrb_msgbox_error, MRB_ARGS_REQ(1));

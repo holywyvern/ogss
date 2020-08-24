@@ -1,5 +1,5 @@
-#ifndef OGSS_TONE_H
-#define OGSS_TONE_H 1
+#ifndef ORGF_TONE_H
+#define ORGF_TONE_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>

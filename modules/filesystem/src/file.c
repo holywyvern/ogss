@@ -6,7 +6,7 @@
 #include <mruby/string.h>
 #include <mruby/variable.h>
 
-#include <ogss/file.h>
+#include <orgf/file.h>
 
 #include <string.h>
 

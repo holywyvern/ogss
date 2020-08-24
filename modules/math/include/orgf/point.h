@@ -1,5 +1,5 @@
-#ifndef OGSS_POINT_H
-#define OGSS_POINT_H 1
+#ifndef ORGF_POINT_H
+#define ORGF_POINT_H 1
 
 #include <mruby.h>
 #include <mruby/data.h>
@@ -40,4 +40,4 @@ mrb_point_new(mrb_state *mrb, mrb_float x, mrb_float y)
 }
 #endif
 
-#endif /* OGSS_POINT_H */
+#endif /* ORGF_POINT_H */

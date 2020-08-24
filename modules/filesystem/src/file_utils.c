@@ -1,6 +1,6 @@
 #include <mruby.h>
 
-#include <ogss/file.h>
+#include <orgf/file.h>
 
 static mrb_value
 file_mkdir(mrb_state *mrb, mrb_value self)

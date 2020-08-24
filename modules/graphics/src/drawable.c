@@ -1,6 +1,6 @@
 #include <mruby.h>
 
-#include <ogss/drawable.h>
+#include <orgf/drawable.h>
 
 static int
 sort_by_z(const void *a, const void *b)
