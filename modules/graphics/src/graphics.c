@@ -9,6 +9,8 @@
 #include <rayfork.h>
 
 #include <orgf/alloc.h>
+#include <orgf/bitmap.h>
+#include <orgf/file.h>
 #include <orgf/drawable.h>
 #include <orgf/graphics.h>
 
@@ -205,6 +207,10 @@ mrb_graphics_freeze(mrb_state *mrb, mrb_value self)
   size_t size = config->width * config->height;
   rf_color *buffer = mrb_malloc(mrb, size * sizeof *buffer);
   rf_get_context()->gfx_ctx.gl.ReadPixels(0, 0, config->width, config->height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+  for (size_t i = 0; i < size; ++i)
+  {
+    buffer[i].a = 1; // remove transparency
+  }
   rf_image image;
   image.data   = buffer;
   image.width  = config->width;
@@ -276,8 +282,9 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
   rf_graphics_config *config = get_config(mrb, self);
   rf_begin();
   mrb_container_update(mrb, &(config->container));
-  rf_clear(RF_LIT(rf_color){ 0, 0, 0, 0 });
+  rf_clear(RF_BLANK);
   rf_begin_render_to_texture(config->render_texture);
+    rf_clear(RF_BLANK);
     mrb_container_draw_children(mrb, &(config->container));
   rf_end_render_to_texture();
   rf_texture2d tex;
@@ -295,6 +302,73 @@ mrb_graphics_update(mrb_state *mrb, mrb_value self)
   return mrb_nil_value();
 }
 
+rf_shader transition_shader;
+
+static struct
+{
+  int transition_texture, left;
+} transition_shader_locations;
+
+static mrb_bool transition_shader_init = FALSE;
+
+static const char *transition_frag =
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+  "#version 100\n"
+  "precision mediump float;"
+  "varying vec2 frag_tex_coord;"
+  "varying vec4 frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+  "#version 330\n"
+  "precision mediump float;"
+  "in vec2 frag_tex_coord;"
+  "in vec4 frag_color;"
+  "out vec4 final_color;"
+#endif
+  "uniform sampler2D texture0;"
+  "uniform sampler2D texture1;"
+  "uniform float left;"
+  "uniform vec4 col_diffuse;"
+  "void main()"
+  "{"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+  "    vec4 tt = texture2D(texture1, frag_tex_coord);"
+  "    vec4 texel_color = texture2D(texture0, frag_tex_coord);"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+  "    vec4 tt = texture(texture1, frag_tex_coord);"
+  "    vec4 texel_color = texture(texture0, frag_tex_coord);"
+#endif
+  "    float gray = (0.3 * tt.r) + (0.59 * tt.g) + (0.11 * tt.b);"
+  "    texel_color.a = (1 - gray) * left;"
+#if defined(RAYFORK_GRAPHICS_BACKEND_GL_ES3)
+  "    frag_color = texel_color*col_diffuse*frag_color;"
+#elif defined(RAYFORK_GRAPHICS_BACKEND_GL_33)
+  "    final_color = texel_color*col_diffuse*frag_color;"
+#endif
+"}";
+
+static inline void
+init_transition_shader()
+{
+  if (!transition_shader_init)
+  {
+    transition_shader = rf_gfx_load_shader(NULL, transition_frag);
+    transition_shader_locations.left = rf_gfx_get_shader_location(transition_shader, "left");
+    transition_shader_locations.transition_texture = rf_gfx_get_shader_location(transition_shader, "texture1");
+    transition_shader_init = true;
+  }
+}
+
+static inline void
+bind_transition_shader(rf_texture2d texture, float left)
+{
+  rf_gfx_set_shader_value(
+    transition_shader, transition_shader_locations.left, &left, RF_UNIFORM_FLOAT
+  );
+  rf_gfx_set_shader_value_texture(
+    transition_shader, transition_shader_locations.transition_texture, texture
+  );
+}
+
 static mrb_value
 mrb_graphics_transition(mrb_state *mrb, mrb_value self)
 {
@@ -310,7 +384,34 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
   {
     if (name)
     {
-      // TODO: Perform image transition
+      mrb_container_update(mrb, &(config->container));
+      rf_begin_render_to_texture(config->render_texture);
+        rf_clear(RF_BLANK);
+        mrb_container_draw_children(mrb, &(config->container));
+      rf_end_render_to_texture();
+      const char *new_name = mrb_filesystem_join(mrb, "Graphics", name);
+      rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, MRB_IMAGE_EXTENSIONS);
+      rf_texture2d transition_texture = rf_load_texture_from_file(new_name, mrb_get_allocator(mrb), io);
+      mrb_float dt = duration;
+      while (dt > 0)
+      {
+        dt -= config->dt;
+        if (dt < 0) dt = 0;
+        float left = (float)(dt / duration);
+        // TODO: Fix image transition not actually working
+        rf_begin();
+          rf_clear(RF_BLANK);
+          rf_begin_blend_mode(RF_BLEND_ALPHA);
+            draw_screen(config->render_texture.texture, RF_RAYWHITE);
+            rf_begin_shader(transition_shader);
+              bind_transition_shader(transition_texture, left);
+              draw_screen(config->frozen_img, RF_RAYWHITE);
+            rf_end_shader();
+          rf_end_blend_mode();
+        rf_end();
+        mrb_graphics_frame_reset(mrb, self);
+      }
+      rf_unload_texture(transition_texture);
     }
     else
     {
@@ -480,6 +581,7 @@ mrb_start_game(mrb_state *mrb, mrb_value self)
   config->context = (rf_context){0};
   rf_init_context(&(config->context));
   rf_init_gfx((int)config->width, (int)config->height, config->data);
+  init_transition_shader();
   rf_allocator alloc = mrb_get_allocator(mrb);
   config->render_batch = rf_create_default_render_batch(alloc);
   rf_set_active_render_batch(&(config->render_batch));

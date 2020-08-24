@@ -14,6 +14,7 @@ extern "C" {
 typedef struct rf_bitmap rf_bitmap;
 
 extern const struct mrb_data_type mrb_bitmap_data_type;
+extern const char *MRB_IMAGE_EXTENSIONS[];
 
 struct rf_bitmap
 {

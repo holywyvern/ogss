@@ -14,7 +14,7 @@
 
 #define FONT mrb_intern_lit(mrb, "#font")
 
-static const char *IMAGE_EXTENSIONS[] = {
+const char *MRB_IMAGE_EXTENSIONS[] = {
   "",
   ".png",
   ".bmp",
@@ -56,7 +56,7 @@ mrb_bitmap_initialize(mrb_state *mrb, mrb_value self)
     {
       int arena = mrb_gc_arena_save(mrb);
       const char *filename;
-      rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, IMAGE_EXTENSIONS);
+      rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, MRB_IMAGE_EXTENSIONS);
       mrb_get_args(mrb, "z", &filename);
       const char *new_filename = mrb_filesystem_join(mrb, "Graphics", filename);
       img = rf_load_image_from_file(new_filename, alloc, alloc, io);
