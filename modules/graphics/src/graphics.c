@@ -416,8 +416,8 @@ mrb_graphics_transition(mrb_state *mrb, mrb_value self)
         float left = (float)(dt / duration);
         rf_begin();
           rf_clear(RF_BLANK);
+          draw_screen(config->render_texture.texture, RF_RAYWHITE, 0);
           rf_begin_blend_mode(RF_BLEND_ALPHA);
-            draw_screen(config->render_texture.texture, RF_RAYWHITE, 0);
             rf_begin_shader(transition_shader);
               bind_transition_shader(transition_texture, 1.0f - left);
               draw_screen(config->frozen_img, RF_RAYWHITE, &transition_texture);
