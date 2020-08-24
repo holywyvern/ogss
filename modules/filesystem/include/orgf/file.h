@@ -112,6 +112,9 @@ mrb_is_file(mrb_value obj)
   return mrb_data_p(obj) && DATA_TYPE(obj) == &mrb_file_data_type;
 }
 
+const char *
+mrb_filesystem_join(mrb_state *mrb, const char *a, const char *b);
+
 #ifdef __cplusplus
 }
 #endif

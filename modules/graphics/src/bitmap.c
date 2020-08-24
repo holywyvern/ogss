@@ -54,10 +54,13 @@ mrb_bitmap_initialize(mrb_state *mrb, mrb_value self)
     }
     case 1:
     {
+      int arena = mrb_gc_arena_save(mrb);
       const char *filename;
       rf_io_callbacks io = mrb_get_io_callbacks_for_extensions(mrb, IMAGE_EXTENSIONS);
       mrb_get_args(mrb, "z", &filename);
-      img = rf_load_image_from_file(filename, alloc, alloc, io);
+      const char *new_filename = mrb_filesystem_join(mrb, "Graphics", filename);
+      img = rf_load_image_from_file(new_filename, alloc, alloc, io);
+      mrb_gc_arena_restore(mrb, arena);
       break;
     }
     case 2:

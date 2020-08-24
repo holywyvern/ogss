@@ -634,3 +634,11 @@ mrb_close_filesystem(mrb_state *mrb)
     }
   }
 }
+
+const char *
+mrb_filesystem_join(mrb_state *mrb, const char *a, const char *b)
+{
+  mrb_value file = mrb_obj_value(mrb_class_get(mrb, "File"));
+  mrb_value str = mrb_funcall(mrb, file, "join", 2, mrb_str_new_cstr(mrb, a), mrb_str_new_cstr(mrb, b));
+  return mrb_str_to_cstr(mrb, mrb_to_str(mrb, str));
+}

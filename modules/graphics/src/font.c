@@ -61,8 +61,11 @@ mrb_font_initialize(mrb_state *mrb, mrb_value self)
   DATA_PTR(self) = data;
   if (filename)
   {
-    *data = rf_load_ttf_font_from_file(filename, (int)size, aa, alloc, alloc, io);
+    int arena = mrb_gc_arena_save(mrb);
+    const char *new_filename = mrb_filesystem_join(mrb, "Fonts", filename);
+    *data = rf_load_ttf_font_from_file(new_filename, (int)size, aa, alloc, alloc, io);
     mrb_iv_set(mrb, self, NAME, mrb_str_new_cstr(mrb, filename));
+    mrb_gc_arena_restore(mrb, arena);
   }
   else
   {
